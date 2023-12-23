@@ -7,13 +7,23 @@
     "build": "remix build",
     "dev": "remix dev --manual",
     "start": "remix-serve ./build/index.js",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "lint": "npx eslint app",
+    "prisma:generate": "npx prisma generate",
+    "prisma:update": "npm run prisma:generate && npx prisma db push"
   },
   "dependencies": {
     "@prisma/client": "^5.5.2",
+    "@radix-ui/react-accordion": "^1.1.2",
+    "@radix-ui/react-alert-dialog": "^1.0.5",
     "@radix-ui/react-dialog": "^1.0.5",
+    "@radix-ui/react-dropdown-menu": "^2.0.6",
     "@radix-ui/react-label": "^2.0.2",
+    "@radix-ui/react-separator": "^1.0.3",
     "@radix-ui/react-slot": "^1.0.2",
+    "@radix-ui/react-toast": "^1.1.5",
+    "@radix-ui/react-tooltip": "^1.0.7",
+    "@react-google-maps/api": "^2.19.2",
     "@remix-run/css-bundle": "^2.2.0",
     "@remix-run/node": "^2.2.0",
     "@remix-run/react": "^2.2.0",
@@ -23,6 +33,7 @@
     "bcrypt": "^5.1.1",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
+    "date-fns": "^3.0.1",
     "isbot": "^3.6.8",
     "lucide-react": "^0.292.0",
     "prisma": "^5.5.2",
@@ -33,6 +44,7 @@
     "remix-validated-form": "^5.1.5",
     "tailwind-merge": "^2.0.0",
     "tailwindcss-animate": "^1.0.7",
+    "uuid": "^9.0.1",
     "zod": "^3.22.4"
   },
   "devDependencies": {
@@ -41,6 +53,7 @@
     "@types/bcrypt": "^5.0.2",
     "@types/react": "^18.2.20",
     "@types/react-dom": "^18.2.7",
+    "@types/uuid": "^9.0.7",
     "eslint": "^8.38.0",
     "tailwindcss": "^3.3.5",
     "typescript": "^5.1.6"
