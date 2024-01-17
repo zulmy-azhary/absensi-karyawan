@@ -12,6 +12,7 @@ import {
   LayoutList,
   Users,
   X,
+  Forward,
 } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import NavLink from "~/components/ui/nav-link";
@@ -50,9 +51,11 @@ export default function Sidebar(props: SidebarProps) {
       <div className="grow flex flex-col gap-y-5">
         <ul className="flex flex-col gap-y-2">
           <span className="text-sm font-bold uppercase tracking-wide">Menu</span>
-          <NavLink icon={LayoutDashboard} to="/app">
-            Dashboard
-          </NavLink>
+          {role === "Admin" ? (
+            <NavLink icon={LayoutDashboard} to="/app">
+              Dashboard
+            </NavLink>
+          ) : null}
           {role === "Admin" ? (
             <NavLink icon={Users} to="/app/users">
               Daftar Pengguna
@@ -64,12 +67,19 @@ export default function Sidebar(props: SidebarProps) {
         </ul>
         <ul className="flex flex-col gap-y-2">
           <span className="text-sm font-bold uppercase tracking-wide">Manajemen Absensi</span>
-          <NavLink icon={BookText} to="/app/absensi">
-            Lakukan Absensi
-          </NavLink>
-          <NavLink icon={LayoutList} to="/app/attendance">
-            Attendance
-          </NavLink>
+          {role === "Karyawan" ? (
+            <>
+              <NavLink icon={BookText} to="/app/absensi">
+                Lakukan Absensi
+              </NavLink>
+              <NavLink icon={LayoutList} to="/app/absensi/attendance">
+                Attendance
+              </NavLink>
+              <NavLink icon={Forward} to="/app/absensi/submission">
+                Pengajuan
+              </NavLink>
+            </>
+          ) : null}
           {role === "Admin" ? (
             <NavLink icon={MapPinned} to="/app/absensi/settings">
               Pengaturan Lokasi
