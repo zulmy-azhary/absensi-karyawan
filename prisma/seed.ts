@@ -2,21 +2,24 @@ import { hashPassword } from "~/services/user.server";
 import { db } from "~/lib/db";
 
 async function main() {
-  const zoel = await db.user.upsert({
+  const user = await db.user.upsert({
     where: { nik: "123123123" },
     update: {},
     create: {
-      name: "Zulmy Azhary AS",
+      name: "Admin",
       nik: "123123123",
       password: hashPassword("123123123"),
       role: "Admin",
     },
   });
 
-  const targetInfos = await db.targetLocation.upsert({
-    where: { id: 1 },
-    update: {},
-    create: {
+  const isTargetLocationExist = await db.targetLocation.findMany();
+  if (isTargetLocationExist) {
+    await db.targetLocation.deleteMany();
+  }
+
+  const targetInfos = await db.targetLocation.create({
+    data: {
       name: "PT. Kalla Toyota Urip",
       lat: -5.1371751,
       lng: 119.4381947,
@@ -24,7 +27,7 @@ async function main() {
     },
   });
 
-  console.log({ zoel, targetInfos });
+  console.log("Seed Data :",{ user, targetInfos });
 }
 
 main()
