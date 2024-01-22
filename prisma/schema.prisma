@@ -8,7 +8,7 @@ datasource db {
 }
 
 model User {
-  userId    Int      @id @default(autoincrement())
+  id        String   @id @default(cuid())
   nik       String   @unique
   name      String
   password  String
@@ -18,7 +18,7 @@ model User {
 }
 
 model TargetLocation {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(cuid())
   name      String
   lat       Float
   lng       Float
@@ -28,25 +28,35 @@ model TargetLocation {
 }
 
 model Absence {
-  id           Int            @id @default(autoincrement())
-  name         String
-  nik          String
-  absenceId    String         @unique
-  absenceState AbsenceState[]
-  status       AbsenceStatus
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @default(now()) @updatedAt
+  id         String              @id @default(cuid())
+  name       String
+  nik        String
+  attendance AbsenceAttendance[]
+  status     AbsenceStatus
+  submission AbsenceSubmission?
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @default(now()) @updatedAt
 }
 
-model AbsenceState {
-  id        Int           @id @default(autoincrement())
-  absenceId String        
-  lat       Float
-  lng       Float
-  status    AbsenceStatus
-  distance  Int
-  absence   Absence       @relation(fields: [absenceId], references: [absenceId])
-  createdAt DateTime      @default(now())
+model AbsenceAttendance {
+  id           String           @id @default(cuid())
+  attendanceId String
+  lat          Float
+  lng          Float
+  distance     Int
+  absence      Absence          @relation(fields: [attendanceId], references: [id])
+  status       AttendanceStatus
+  createdAt    DateTime         @default(now())
+}
+
+model AbsenceSubmission {
+  id          String        @unique
+  status      AbsenceStatus
+  description String        @db.Text
+  isApproved  Boolean       @default(false)
+  startDate   DateTime
+  endDate     DateTime
+  absence     Absence       @relation(fields: [id], references: [id])
 }
 
 enum Role {
@@ -55,6 +65,13 @@ enum Role {
 }
 
 enum AbsenceStatus {
+  Hadir
+  Alpa
+  Izin
+  Sakit
+}
+
+enum AttendanceStatus {
   Masuk
   Keluar
 }
