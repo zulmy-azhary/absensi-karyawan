@@ -44,7 +44,7 @@ model AbsenceAttendance {
   lat          Float
   lng          Float
   distance     Int
-  absence      Absence          @relation(fields: [attendanceId], references: [id])
+  absence      Absence          @relation(fields: [attendanceId], references: [id], onDelete: Cascade)
   status       AttendanceStatus
   createdAt    DateTime         @default(now())
 }
@@ -56,7 +56,7 @@ model AbsenceSubmission {
   isApproved  Boolean       @default(false)
   startDate   DateTime
   endDate     DateTime
-  absence     Absence       @relation(fields: [id], references: [id])
+  absence     Absence       @relation(fields: [id], references: [id], onDelete: Cascade)
 }
 
 enum Role {

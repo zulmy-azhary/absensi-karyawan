@@ -6,7 +6,7 @@ async function main() {
     where: { nik: "123123123" },
     update: {},
     create: {
-      name: "Admin",
+      name: "John Doe",
       nik: "123123123",
       password: hashPassword("123123123"),
       role: "Admin",
