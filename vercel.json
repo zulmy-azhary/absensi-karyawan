@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/cron/absence",
+      "schedule": "1 0 * * *"
+    }
+  ]
+}
