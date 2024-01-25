@@ -1,6 +1,6 @@
 import { Button } from "~/components/ui/button";
 import { UserX2 } from "lucide-react";
-import { type UserType } from "~/services/auth.server";
+import type { UserType } from "~/types";
 import { type SerializeFrom } from "@remix-run/node";
 import { Form } from "@remix-run/react";
 import {
@@ -14,12 +14,27 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "~/components/ui/alert-dialog";
+import { deleteUserSchema } from "~/schemas/user.schema";
+import type { z } from "zod";
+import { useRemixForm } from "remix-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 type DeleteUserModalProps = {
   user: SerializeFrom<UserType>;
 };
 
 export default function DeleteUserModal({ user }: DeleteUserModalProps) {
+  const form = useRemixForm<z.infer<typeof deleteUserSchema>>({
+    resolver: zodResolver(deleteUserSchema),
+    mode: "onChange",
+    defaultValues: {
+      nik: user.nik
+    },
+    submitData: {
+      action: "DELETE",
+    },
+  });
+
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
@@ -28,7 +43,7 @@ export default function DeleteUserModal({ user }: DeleteUserModalProps) {
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
-        <Form method="post">
+        <Form method="post" onSubmit={form.handleSubmit}>
           <AlertDialogHeader className="gap-y-2">
             <AlertDialogTitle className="text-center">
               Apakah anda yakin ingin menghapus akun ini?
@@ -45,7 +60,7 @@ export default function DeleteUserModal({ user }: DeleteUserModalProps) {
           </AlertDialogHeader>
           <AlertDialogFooter className="justify-center">
             <AlertDialogCancel>Batal</AlertDialogCancel>
-            <AlertDialogAction type="submit" name="_action" value="DELETE">
+            <AlertDialogAction type="submit">
               Hapus
             </AlertDialogAction>
           </AlertDialogFooter>

@@ -1,37 +1,27 @@
-import { type FormProps, ValidatedForm, useIsSubmitting } from "remix-validated-form";
 import { cn } from "~/lib/utils";
-import { Button } from "~/components/ui/button";
 import { useEffect } from "react";
 import { useToast } from "~/components/ui/use-toast";
+import { Form, type FormProps } from "@remix-run/react";
+import { useRemixFormContext } from "remix-hook-form";
 
-type CustomFormProps<T> = FormProps<T, string | undefined> & {
-  id: string;
+type CustomFormProps = FormProps & {
   actionData: { message: string } | undefined;
-  buttonName: string;
 };
 
-export default function CustomForm<T extends { [key: string]: any }>(props: CustomFormProps<T>) {
-  const { id, actionData, buttonName, children, validator, className, ...rest } = props;
-  const isSubmitting = useIsSubmitting(id);
+export default function CustomForm(props: CustomFormProps) {
+  const { actionData, children, className, ...rest } = props;
+  const { handleSubmit } = useRemixFormContext();
   const { toast } = useToast();
 
   useEffect(() => {
-    if (!actionData) return;
+    if (!actionData || !actionData.message) return;
 
     toast({ description: actionData.message });
   }, [actionData, toast]);
 
   return (
-    <ValidatedForm
-      id={id}
-      validator={validator}
-      className={cn(className, "space-y-8 w-full")}
-      {...rest}
-    >
+    <Form onSubmit={handleSubmit} className={cn("space-y-8 w-full", className)} {...rest}>
       {children}
-      <Button type="submit" disabled={isSubmitting}>
-        {isSubmitting ? "Memproses..." : buttonName}
-      </Button>
-    </ValidatedForm>
+    </Form>
   );
 }
