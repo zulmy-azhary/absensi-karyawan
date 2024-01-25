@@ -16,7 +16,7 @@ import type { z } from "zod";
 import { absenceSchema } from "~/schemas/absence.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CustomInput } from "~/components/ui/custom-input";
-import CustomForm from "~/components/ui/custom-form";
+import { CustomForm } from "~/components/ui/custom-form";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const user = await isKaryawan(request);

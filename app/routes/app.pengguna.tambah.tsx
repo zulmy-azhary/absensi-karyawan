@@ -1,6 +1,6 @@
 import { type ActionFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useActionData } from "@remix-run/react";
-import CustomForm from "~/components/ui/custom-form";
+import { CustomForm } from "~/components/ui/custom-form";
 import { createUserAction } from "~/actions/user.server";
 import { RemixFormProvider, useRemixForm } from "remix-hook-form";
 import { userSchema } from "~/schemas/user.schema";

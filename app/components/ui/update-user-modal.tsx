@@ -23,7 +23,7 @@ type UpdateUserProps = {
   user: SerializeFrom<UserType>;
 };
 
-export default function UpdateUserModal({ user }: UpdateUserProps) {
+export const UpdateUserModal = ({ user }: UpdateUserProps) => {
   const [open, setOpen] = useState(false);
   const form = useRemixForm<z.infer<typeof updateUserSchema>>({
     resolver: zodResolver(updateUserSchema),
@@ -101,4 +101,4 @@ export default function UpdateUserModal({ user }: UpdateUserProps) {
       </DialogContent>
     </Dialog>
   );
-}
+};

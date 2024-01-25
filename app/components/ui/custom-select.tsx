@@ -10,7 +10,7 @@ type CustomSelectProps = {
   children: React.ReactNode;
 };
 
-export default function CustomSelect(props: CustomSelectProps) {
+export const CustomSelect = (props: CustomSelectProps) => {
   const { name, label, placeholder, children } = props;
   const { control } = useRemixFormContext();
 

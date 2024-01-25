@@ -14,7 +14,7 @@ import type { z } from "zod";
 import { locationSchema } from "~/schemas/location.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CustomInput } from "~/components/ui/custom-input";
-import CustomForm from "~/components/ui/custom-form";
+import { CustomForm } from "~/components/ui/custom-form";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   await isAdmin(request);

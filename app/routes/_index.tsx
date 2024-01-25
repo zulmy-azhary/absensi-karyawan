@@ -10,7 +10,7 @@ import { loginSchema } from "~/schemas/user.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { z } from "zod";
 import { CustomInput } from "~/components/ui/custom-input";
-import CustomForm from "~/components/ui/custom-form";
+import { CustomForm } from "~/components/ui/custom-form";
 import { Button } from "~/components/ui/button";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {

@@ -12,7 +12,7 @@ type DatePickerWithRangeProps = React.ComponentProps<"div"> & {
   label?: string;
 };
 
-export default function DatePickerWithRange(props: DatePickerWithRangeProps) {
+export const DatePickerWithRange = (props: DatePickerWithRangeProps) => {
   const { name, label } = props;
   const { control } = useRemixFormContext();
 
@@ -68,4 +68,4 @@ export default function DatePickerWithRange(props: DatePickerWithRangeProps) {
       )}
     />
   );
-}
+};

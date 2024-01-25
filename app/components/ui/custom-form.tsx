@@ -8,7 +8,7 @@ type CustomFormProps = FormProps & {
   actionData: { message: string } | undefined;
 };
 
-export default function CustomForm(props: CustomFormProps) {
+export const CustomForm = (props: CustomFormProps) => {
   const { actionData, children, className, ...rest } = props;
   const { handleSubmit } = useRemixFormContext();
   const { toast } = useToast();

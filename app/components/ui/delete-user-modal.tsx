@@ -23,12 +23,12 @@ type DeleteUserModalProps = {
   user: SerializeFrom<UserType>;
 };
 
-export default function DeleteUserModal({ user }: DeleteUserModalProps) {
+export const DeleteUserModal = ({ user }: DeleteUserModalProps) => {
   const form = useRemixForm<z.infer<typeof deleteUserSchema>>({
     resolver: zodResolver(deleteUserSchema),
     mode: "onChange",
     defaultValues: {
-      nik: user.nik
+      nik: user.nik,
     },
     submitData: {
       action: "DELETE",
@@ -60,12 +60,10 @@ export default function DeleteUserModal({ user }: DeleteUserModalProps) {
           </AlertDialogHeader>
           <AlertDialogFooter className="justify-center">
             <AlertDialogCancel>Batal</AlertDialogCancel>
-            <AlertDialogAction type="submit">
-              Hapus
-            </AlertDialogAction>
+            <AlertDialogAction type="submit">Hapus</AlertDialogAction>
           </AlertDialogFooter>
         </Form>
       </AlertDialogContent>
     </AlertDialog>
   );
-}
+};

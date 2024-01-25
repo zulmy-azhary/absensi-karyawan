@@ -8,7 +8,7 @@ type TextareaProps = React.TextareaHTMLAttributes<HTMLTextAreaElement> & {
   name: string;
 };
 
-export default function CustomTextarea(props: TextareaProps) {
+export const CustomTextarea = (props: TextareaProps) => {
   const { label, name, ...rest } = props;
   const { control } = useRemixFormContext();
 
@@ -34,4 +34,4 @@ export default function CustomTextarea(props: TextareaProps) {
       )}
     />
   );
-}
+};

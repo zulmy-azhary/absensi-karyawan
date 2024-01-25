@@ -8,7 +8,6 @@ import { Link, useActionData, useLoaderData } from "@remix-run/react";
 import { useEffect } from "react";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
-import DeleteUserModal from "~/components/ui/delete-user-modal";
 import {
   Table,
   TableBody,
@@ -17,7 +16,8 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import UpdateUserModal from "~/components/ui/update-user-modal";
+import { UpdateUserModal } from "~/components/ui/update-user-modal";
+import { DeleteUserModal } from "~/components/ui/delete-user-modal";
 import { useToast } from "~/components/ui/use-toast";
 import { commitSession, getSession } from "~/services/session.server";
 import { deleteUser, updateUser } from "~/actions/user.server";
