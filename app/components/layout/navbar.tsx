@@ -10,7 +10,7 @@ import {
 } from "~/components/ui/dropdown-menu";
 import { Button } from "~/components/ui/button";
 import { LogOut, Menu, User as UserIcon } from "lucide-react";
-import { type UserType } from "~/services/auth.server";
+import type { UserType } from "~/types";
 import { cn } from "~/lib/utils";
 import { type SerializeFrom } from "@remix-run/node";
 

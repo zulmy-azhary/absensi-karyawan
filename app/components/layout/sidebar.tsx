@@ -57,11 +57,11 @@ export default function Sidebar(props: SidebarProps) {
             </NavLink>
           ) : null}
           {role === "Admin" ? (
-            <NavLink icon={Users} to="/app/users">
+            <NavLink icon={Users} to="/app/pengguna">
               Daftar Pengguna
             </NavLink>
           ) : null}
-          <NavLink icon={LucideUser} to="/app/profile">
+          <NavLink icon={LucideUser} to="/app/profil">
             Profil
           </NavLink>
         </ul>
@@ -72,16 +72,16 @@ export default function Sidebar(props: SidebarProps) {
               <NavLink icon={BookText} to="/app/absensi">
                 Lakukan Absensi
               </NavLink>
-              <NavLink icon={LayoutList} to="/app/absensi/attendance">
-                Attendance
+              <NavLink icon={LayoutList} to="/app/absensi/kehadiran">
+                Kehadiran
               </NavLink>
-              <NavLink icon={Forward} to="/app/absensi/submission">
+              <NavLink icon={Forward} to="/app/absensi/pengajuan">
                 Pengajuan
               </NavLink>
             </>
           ) : null}
           {role === "Admin" ? (
-            <NavLink icon={MapPinned} to="/app/absensi/settings">
+            <NavLink icon={MapPinned} to="/app/absensi/pengaturan">
               Pengaturan Lokasi
             </NavLink>
           ) : null}
