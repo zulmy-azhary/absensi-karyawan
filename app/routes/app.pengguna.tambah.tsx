@@ -1,58 +1,47 @@
-import {
-  type MetaFunction,
-  type ActionFunctionArgs,
-  type LoaderFunctionArgs,
-} from "@remix-run/node";
-import { USER_PASS_STRATEGY, authenticator } from "~/actions/auth.server";
+import { type ActionFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useActionData } from "@remix-run/react";
+import CustomForm from "~/components/ui/custom-form";
+import { createUserAction } from "~/actions/user.server";
 import { RemixFormProvider, useRemixForm } from "remix-hook-form";
-import { loginSchema } from "~/schemas/user.schema";
+import { userSchema } from "~/schemas/user.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { z } from "zod";
 import { CustomInput } from "~/components/ui/custom-input";
-import CustomForm from "~/components/ui/custom-form";
 import { Button } from "~/components/ui/button";
-
-export const loader = async ({ request }: LoaderFunctionArgs) => {
-  return await authenticator.isAuthenticated(request, {
-    successRedirect: "/app",
-  });
-};
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   try {
-    return await authenticator.authenticate(USER_PASS_STRATEGY, request, {
-      successRedirect: "/app",
-    });
+    return await createUserAction(request);
   } catch (error: unknown) {
     return error as Error;
   }
 };
 
 export const meta: MetaFunction = () => {
-  return [
-    { title: "Absensi Karyawan | Login" },
-    { name: "description", content: "Welcome to Remix!" },
-  ];
+  return [{ title: "Absensi Karyawan | Tambah Pengguna" }];
 };
 
-export default function Index() {
+export default function CreateUser() {
   const actionData = useActionData<typeof action>();
 
-  const form = useRemixForm<z.infer<typeof loginSchema>>({
-    resolver: zodResolver(loginSchema),
-    mode: "onBlur",
+  const form = useRemixForm<z.infer<typeof userSchema>>({
+    resolver: zodResolver(userSchema),
+    mode: "onChange",
     defaultValues: {
+      name: "",
       nik: "",
       password: "",
+      confirmPassword: "",
     },
   });
 
   return (
-    <div className="min-h-screen grid place-items-center">
-      <div className="flex flex-col items-center w-3/4 lg:w-2/4 xl:w-1/4">
+    <div>
+      <h2 className="text-lg font-medium mb-6">Tambah Pengguna</h2>
+      <div className="flex flex-col items-center">
         <RemixFormProvider {...form}>
           <CustomForm actionData={actionData} method="post">
+            <CustomInput name="name" label="Nama Lengkap" placeholder="Masukkan Nama Lengkap..." />
             <CustomInput
               name="nik"
               label="Nomor Induk Karyawan"
@@ -64,8 +53,14 @@ export default function Index() {
               type="password"
               placeholder="Masukkan Password..."
             />
+            <CustomInput
+              name="confirmPassword"
+              label="Konfirmasi Password"
+              type="password"
+              placeholder="Masukkan Konfirmasi Password..."
+            />
             <Button type="submit" disabled={form.formState.isSubmitting}>
-              {form.formState.isSubmitting ? "Memproses..." : "Login"}
+              {form.formState.isSubmitting ? "Memproses..." : "Tambah pengguna"}
             </Button>
           </CustomForm>
         </RemixFormProvider>
