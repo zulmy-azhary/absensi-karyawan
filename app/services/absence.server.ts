@@ -43,7 +43,7 @@ export const generateAbsenceToday = async () => {
                   lte: set(new Date(), { hours: 0, minutes: 0, seconds: 0 }),
                 },
                 endDate: {
-                  gt: set(new Date(), { hours: 23, minutes: 59, seconds: 59 }),
+                  gt: set(new Date(), { hours: 0, minutes: 0, seconds: 0 }),
                 },
               },
             },
@@ -100,7 +100,7 @@ export async function getAbsenceTodayByNik(nik: string) {
               lte: set(new Date(), { hours: 0, minutes: 0, seconds: 0 }),
             },
             endDate: {
-              gt: set(new Date(), { hours: 23, minutes: 59, seconds: 59 }),
+              gt: set(new Date(), { hours: 0, minutes: 0, seconds: 0 }),
             },
           },
         },
@@ -159,7 +159,7 @@ export const getAbsenceTodayAll = async () => {
               lte: set(new Date(), { hours: 0, minutes: 0, seconds: 0 }),
             },
             endDate: {
-              gt: set(new Date(), { hours: 23, minutes: 59, seconds: 59 }),
+              gt: set(new Date(), { hours: 0, minutes: 0, seconds: 0 }),
             },
           },
         },
@@ -189,3 +189,14 @@ export const deleteAbsenceById = async (id: string) => {
     where: { id },
   });
 };
+
+export const getSubmissionNotApprovedAll = async () => {
+  return await db.absence.findMany({
+    include: { submission: true },
+    where: {
+      submission: {
+        isApproved: false
+      }
+    }
+  })
+}
