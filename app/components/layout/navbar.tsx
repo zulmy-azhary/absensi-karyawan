@@ -50,7 +50,7 @@ export default function Navbar(props: NavbarProps) {
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <Link to="/app/profile">
+            <Link to="/app/profil">
               <DropdownMenuItem>
                 <UserIcon className="mr-2 h-4 w-4" />
                 <span>Profil</span>
