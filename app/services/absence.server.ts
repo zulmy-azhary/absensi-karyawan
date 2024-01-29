@@ -200,3 +200,10 @@ export const getSubmissionNotApprovedAll = async () => {
     }
   })
 }
+
+export const getAbsenceAllByNik = async (nik: string) => {
+  return await db.absence.findMany({
+    where: { nik },
+    include: { attendance: true, submission: true }
+  })
+}
