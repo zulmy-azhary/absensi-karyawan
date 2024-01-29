@@ -3,12 +3,13 @@ import { getTargetLocation } from "~/services/location.server";
 import { calculateDistance } from "~/lib/calculate-distance";
 import { authenticator } from "~/actions/auth.server";
 import { AuthorizationError } from "remix-auth";
-import { createAbsence, getAbsenceTodayByNik, updateAbsenceById } from "~/services/absence.server";
+import { getAbsenceTodayByNik } from "~/services/absence.server";
 import { parseFormData, validateFormData } from "remix-hook-form";
 import type { z } from "zod";
 import { absenceSchema } from "~/schemas/absence.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { set } from "date-fns";
+import { absenceState } from "~/lib/utils";
+import { db } from "~/lib/db";
 
 export async function createAbsenceAction(request: Request) {
   // Validate user's input
@@ -47,14 +48,91 @@ export async function createAbsenceAction(request: Request) {
 
   // Cek status apakah user hari ini belum absen
   if (!absenceToday || absenceToday.status === "Alpa") {
-    // Jika waktu sekarang sudah jam 08:00 AM atau sebelum jam 09:00 AM, absen masuk sudah bisa dilakukan
-    if (new Date() < set(new Date(), { hours: 8 })) {
-      return json({ message: "Belum dapat melakukan absen." }, { status: 422 });
+    const absenceStateToday = absenceState(new Date());
+    console.log(absenceToday);
+
+    if (absenceStateToday === "Belum Bisa Absen Masuk") {
+      return json({ message: "Belum dapat melakukan absen masuk." }, { status: 403 });
     }
-    // Jika waktu sudah lewat dari jam 09:00 AM, absen masuk sudah tidak bisa dilakukan
-    // Jika waktu sudah jam 17:00 PM sampai jam 22:00 PM, maka absen keluar sudah bisa dilakukan
-    // Jika waktu sudah lewwat dari jam 22:00 PM, maka absen keluar sudah tidak bisa dilakukan
-    return null;
+
+    if (absenceStateToday === "Lakukan Absen Masuk") {
+      //! Logic untuk absen masuk di jam 08:00AM - 09:00AM
+      // Here...
+      await db.absence.upsert({
+        where: { id: absenceToday?.id },
+        create: {
+          name: user.name,
+          nik: user.nik,
+          status: "Hadir",
+          attendance: {
+            create: {
+              lat,
+              lng,
+              distance,
+              status: "Masuk",
+            },
+          },
+        },
+        update: {
+          status: "Hadir",
+          attendance: {
+            create: {
+              lat,
+              lng,
+              distance,
+              status: "Masuk",
+            },
+          },
+        },
+      });
+      return json({ message: "Berhasil melakukan absen masuk." }, { status: 200 });
+    }
+
+    if (absenceStateToday === "Absen Masuk Sudah Lewat") {
+      return json({ message: "Sudah tidak dapat melakukan absen masuk." }, { status: 403 });
+    }
+
+    if (absenceStateToday === "Belum Bisa Absen Keluar") {
+      return json({ message: "Belum dapat melakukan absen keluar." }, { status: 403 });
+    }
+
+    if (absenceStateToday === "Lakukan Absen Keluar") {
+      //! Logic untuk absen keluar di jam 17:00PM - 22:00PM
+      // Here...
+      await db.absence.upsert({
+        where: { id: absenceToday?.id },
+        create: {
+          name: user.name,
+          nik: user.nik,
+          status: "Alpa",
+          attendance: {
+            create: {
+              lat,
+              lng,
+              distance,
+              status: "Keluar",
+            },
+          },
+        },
+        update: {
+          attendance: {
+            create: {
+              lat,
+              lng,
+              distance,
+              status: "Keluar",
+            },
+          },
+        },
+      });
+      return json({ message: "Berhasil melakukan absen keluar." }, { status: 200 });
+    }
+
+    if (absenceStateToday === "Absen Keluar Sudah Lewat") {
+      return json({ message: "Sudah tidak dapat melakukan absen keluar." }, { status: 403 });
+    }
+
+    return;
   }
 
   // Cek status apakah user izin, atau sakit
@@ -67,40 +145,4 @@ export async function createAbsenceAction(request: Request) {
   }
 
   return json({ message: "Berhasil melakukan absen." }, { status: 200 });
-
-  // const absence = await getAbsenceTodayByNik(user.nik);
-  // // Jika user belum absensi hari ini, maka lakukan absensi masuk
-  // if (!absence) {
-  //   await createAbsence({
-  //     name: user.name,
-  //     nik: user.nik,
-  //     status: "Masuk",
-  //     absenceState: {
-  //       create: {
-  //         lat,
-  //         lng,
-  //         distance,
-  //         status: "Masuk",
-  //       },
-  //     },
-  //   });
-
-  //   return json({ message: "Berhasil melakukan absensi masuk." }, { status: 200 });
-  // }
-
-  // // Jika sudah melakukan absensi masuk, maka lakukan absensi keluar
-  // if (absence.status === "Masuk") {
-  //   await updateAbsenceById(absence.id, {
-  //     status: "Keluar",
-  //     absenceState: {
-  //       create: {
-  //         lat,
-  //         lng,
-  //         distance,
-  //         status: "Keluar",
-  //       },
-  //     },
-  //   });
-  //   return json({ message: "Berhasil melakukan absensi keluar." }, { status: 200 });
-  // }
 }
