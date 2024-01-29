@@ -17,6 +17,7 @@ import { absenceSchema } from "~/schemas/absence.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CustomInput } from "~/components/ui/custom-input";
 import { CustomForm } from "~/components/ui/custom-form";
+import { absenceState } from "~/lib/utils";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const user = await isKaryawan(request);
@@ -46,12 +47,12 @@ function Absensi() {
   const actionData = useActionData<typeof action>();
   const infos = targetInfos;
   const targetCoords = { lat: infos.lat, lng: infos.lng };
-  const [currentPosition, setCurrentPosition] = useState(targetCoords);
   const [distance, setDistance] = useState(0);
+  const absenceStateToday = absenceState(new Date());
 
   const form = useRemixForm<z.infer<typeof absenceSchema>>({
     resolver: zodResolver(absenceSchema),
-    defaultValues: currentPosition,
+    defaultValues: targetCoords,
   });
 
   const onLoad = useCallback((map: GMapType) => {
@@ -59,9 +60,11 @@ function Absensi() {
       const { latitude, longitude } = position.coords;
       const bounds = new window.google.maps.LatLngBounds({ lat: latitude, lng: longitude });
 
+      form.setValue("lat", latitude);
+      form.setValue("lng", longitude);
+
       const distanceResult = calculateDistance({ lat: latitude, lng: longitude }, targetCoords);
       setDistance(distanceResult);
-      setCurrentPosition({ lat: latitude, lng: longitude });
       map.fitBounds(bounds);
     });
   }, []);
@@ -70,18 +73,15 @@ function Absensi() {
     <div>
       <h2 className="text-lg font-medium mb-6">Absensi</h2>
       <div className="flex flex-col xl:flex-row gap-x-5">
-        {(absence?.status === "Izin" || absence?.status === "Alpa") && (
-          <p>Tidak dapat melakukan absen.</p>
-        )}
         <BaseMap
           gMapsApiKey={gMapsApiKey!}
           gMapsMapId={gMapsMapId!}
-          center={currentPosition}
+          center={form.getValues()}
           onLoad={onLoad}
           id="google-maps-absensi-id"
         >
           <MarkerF
-            position={currentPosition}
+            position={{ lat: form.getValues("lat"), lng: form.getValues("lng") }}
             label={{ text: "Lokasi Saya", className: "-mt-8 font-bold", fontSize: "18px" }}
             options={{ optimized: true }}
           />
@@ -97,7 +97,7 @@ function Absensi() {
             }}
           />
           <PolylineF
-            path={[currentPosition, targetCoords]}
+            path={[form.getValues(), targetCoords]}
             options={{
               strokeWeight: 1,
               strokeColor: "#FF0000",
@@ -106,6 +106,9 @@ function Absensi() {
         </BaseMap>
         <div className="flex flex-col basis-2/6 gap-y-6">
           <div className="">
+            {(absence?.status === "Izin" || absence?.status === "Sakit") && (
+              <p>Belum dapat melakukan absen dikarenakan izin/sakit.</p>
+            )}
             <p>Jarak: {distance} meter</p>
             <p>{distance > infos.radius ? "Diluar area kerja." : "Didalam area kerja."}</p>
           </div>
@@ -118,7 +121,16 @@ function Absensi() {
             >
               <CustomInput readOnly label="Latitude" name="lat" />
               <CustomInput readOnly label="Longitude" name="lng" />
-              <Button type="submit" disabled={distance > infos.radius}></Button>
+              <Button
+                type="submit"
+                disabled={
+                  distance > infos.radius ||
+                  (absenceStateToday !== "Lakukan Absen Masuk" &&
+                    absenceStateToday !== "Lakukan Absen Keluar")
+                }
+              >
+                {absenceStateToday}
+              </Button>
             </CustomForm>
           </RemixFormProvider>
           {/* <div className="flex flex-col gap-y-6">
