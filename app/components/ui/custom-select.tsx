@@ -3,7 +3,7 @@ import { cn } from "~/lib/utils";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "~/components/ui/form";
 import { useRemixFormContext } from "remix-hook-form";
 
-type CustomSelectProps = {
+type CustomSelectProps = React.ComponentPropsWithRef<"button"> & {
   name: string;
   label?: string;
   placeholder?: string;
@@ -11,7 +11,7 @@ type CustomSelectProps = {
 };
 
 export const CustomSelect = (props: CustomSelectProps) => {
-  const { name, label, placeholder, children } = props;
+  const { name, label, placeholder, children, ...rest } = props;
   const { control } = useRemixFormContext();
 
   return (
@@ -23,7 +23,7 @@ export const CustomSelect = (props: CustomSelectProps) => {
           {label ? <FormLabel>{label}</FormLabel> : null}
           <FormControl>
             <Select onValueChange={field.onChange} defaultValue={field.value}>
-              <SelectTrigger className={cn(fieldState.error && "border-red-500")}>
+              <SelectTrigger className={cn(fieldState.error && "border-red-500")} {...rest}>
                 <SelectValue placeholder={placeholder} />
               </SelectTrigger>
               <SelectContent>{children}</SelectContent>

@@ -7,13 +7,13 @@ import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "./form";
 import { useRemixFormContext } from "remix-hook-form";
 
-type DatePickerWithRangeProps = React.ComponentProps<"div"> & {
+type DatePickerWithRangeProps = React.ComponentPropsWithRef<"button"> & {
   name: string;
   label?: string;
 };
 
 export const DatePickerWithRange = (props: DatePickerWithRangeProps) => {
-  const { name, label } = props;
+  const { name, label, ...rest } = props;
   const { control } = useRemixFormContext();
 
   return (
@@ -34,6 +34,7 @@ export const DatePickerWithRange = (props: DatePickerWithRangeProps) => {
                     !field.value && "text-muted-foreground",
                     fieldState.error && "border-red-500"
                   )}
+                  {...rest}
                 >
                   <CalendarIcon
                     className={cn("mr-2 h-4 w-4", fieldState.error && "text-red-500")}
