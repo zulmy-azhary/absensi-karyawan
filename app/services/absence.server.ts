@@ -9,67 +9,6 @@ export const createAbsence = async (payload: CreateAbsence) => {
   });
 };
 
-// Service for generate all users' absence per day if user doesn't have submission
-export const generateAbsenceToday = async () => {
-  return db.$transaction(async (tx) => {
-    // 1. Get all users
-    const users = await tx.user.findMany({
-      where: {
-        role: "Karyawan",
-      },
-    });
-
-    // 2. Loop for all users
-    for (const user of users) {
-      // 3. Check if user's absence is already exist
-      const existingAbsence = await tx.absence.findFirst({
-        where: {
-          nik: user.nik,
-          OR: [
-            {
-              createdAt: {
-                gte: set(new Date(), { hours: 0, minutes: 0, seconds: 0 }), // Start
-                lte: set(new Date(), { hours: 23, minutes: 59, seconds: 59 }), // End
-              },
-            },
-            {
-              status: { in: ["Izin", "Sakit"] },
-              createdAt: {
-                lte: set(new Date(), { hours: 0, minutes: 0, seconds: 0 }),
-              },
-              submission: {
-                isApproved: true,
-                startDate: {
-                  lte: set(new Date(), { hours: 0, minutes: 0, seconds: 0 }),
-                },
-                endDate: {
-                  gt: set(new Date(), { hours: 0, minutes: 0, seconds: 0 }),
-                },
-              },
-            },
-          ],
-          NOT: {
-            submission: {
-              isApproved: false,
-            },
-          },
-        },
-      });
-
-      // 4. If absence doesn't exist, create user.
-      if (!existingAbsence) {
-        await tx.absence.create({
-          data: {
-            nik: user.nik,
-            name: user.name,
-            status: "Alpa",
-          },
-        });
-      }
-    }
-  });
-};
-
 type UpdateAbsence = Prisma.Args<typeof db.absence, "update">["data"];
 export const updateAbsenceById = async (id: string, payload: UpdateAbsence) => {
   return await db.absence.update({
@@ -78,8 +17,8 @@ export const updateAbsenceById = async (id: string, payload: UpdateAbsence) => {
   });
 };
 
-export async function getAbsenceTodayByNik(nik: string) {
-  const currentAbsence = await db.absence.findFirst({
+export const getAbsenceTodayByNik = async (nik: string) => {
+  return await db.absence.findFirst({
     where: {
       nik,
       OR: [
@@ -90,7 +29,6 @@ export async function getAbsenceTodayByNik(nik: string) {
           },
         },
         {
-          status: { in: ["Izin", "Sakit"] },
           createdAt: {
             lte: set(new Date(), { hours: 0, minutes: 0, seconds: 0 }),
           },
@@ -116,8 +54,7 @@ export async function getAbsenceTodayByNik(nik: string) {
       submission: true,
     },
   });
-  return currentAbsence;
-}
+};
 
 export const getAbsenceByNik = async (nik: string) => {
   return await db.absence.findFirst({
@@ -149,7 +86,6 @@ export const getAbsenceTodayAll = async () => {
           },
         },
         {
-          status: { in: ["Izin", "Sakit"] },
           createdAt: {
             lte: set(new Date(), { hours: 0, minutes: 0, seconds: 0 }),
           },
@@ -195,15 +131,21 @@ export const getSubmissionNotApprovedAll = async () => {
     include: { submission: true },
     where: {
       submission: {
-        isApproved: false
-      }
-    }
-  })
-}
+        isApproved: false,
+      },
+    },
+  });
+};
 
 export const getAbsenceAllByNik = async (nik: string) => {
   return await db.absence.findMany({
     where: { nik },
-    include: { attendance: true, submission: true }
-  })
-}
+    include: { attendance: true, submission: true },
+  });
+};
+
+export const getAttendanceById = async (attendanceId: string) => {
+  return await db.absenceAttendance.findMany({
+    where: { attendanceId },
+  });
+};
