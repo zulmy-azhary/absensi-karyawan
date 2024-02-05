@@ -42,7 +42,7 @@ export default function AppRoot() {
 
   return (
     <>
-      <Sidebar isOpen={isOpen} setOpen={setOpen} isLaptop={isLaptop} role={user.role} />
+      <Sidebar isOpen={isOpen} setOpen={setOpen} isLaptop={isLaptop} />
       <main
         className={cn(
           "flex min-h-screen flex-col gap-y-5 pb-12 after:fixed after:backdrop-blur-sm after:duration-300 lg:after:backdrop-blur-none lg:after:duration-0",

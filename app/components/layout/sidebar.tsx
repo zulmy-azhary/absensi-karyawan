@@ -16,17 +16,16 @@ import {
 } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import NavLink from "~/components/ui/nav-link";
-import { type $Enums } from "@prisma/client";
+import { RoleGate } from "~/components/role-gate";
 
 type SidebarProps = {
   isOpen: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
   isLaptop: boolean;
-  role: $Enums.Role;
 };
 
 export default function Sidebar(props: SidebarProps) {
-  const { isOpen, setOpen, isLaptop, role } = props;
+  const { isOpen, setOpen, isLaptop } = props;
   const onClosed = useCallback(() => !isLaptop && setOpen(false), [isLaptop, setOpen]);
   const sidebarRef = useOnClickOutside(isOpen, onClosed);
 
@@ -51,49 +50,45 @@ export default function Sidebar(props: SidebarProps) {
       <div className="grow flex flex-col gap-y-5">
         <ul className="flex flex-col gap-y-2">
           <span className="text-sm font-bold uppercase tracking-wide">Menu</span>
-          {role === "Admin" ? (
+          <RoleGate allowedRole="Admin">
             <NavLink icon={LayoutDashboard} to="/app">
               Dashboard
             </NavLink>
-          ) : null}
-          {role === "Admin" ? (
             <NavLink icon={Users} to="/app/pengguna">
               Daftar Pengguna
             </NavLink>
-          ) : null}
+          </RoleGate>
           <NavLink icon={LucideUser} to="/app/profil">
             Profil
           </NavLink>
         </ul>
         <ul className="flex flex-col gap-y-2">
           <span className="text-sm font-bold uppercase tracking-wide">Manajemen Absensi</span>
-          {role === "Karyawan" ? (
-            <>
-              <NavLink icon={BookText} to="/app/absensi">
-                Lakukan Absensi
-              </NavLink>
-              <NavLink icon={LayoutList} to="/app/absensi/kehadiran">
-                Kehadiran
-              </NavLink>
-              <NavLink icon={Forward} to="/app/absensi/pengajuan">
-                Pengajuan
-              </NavLink>
-            </>
-          ) : null}
-          {role === "Admin" ? (
+          <RoleGate allowedRole="Karyawan">
+            <NavLink icon={BookText} to="/app/absensi">
+              Lakukan Absensi
+            </NavLink>
+            <NavLink icon={LayoutList} to="/app/absensi/kehadiran">
+              Kehadiran
+            </NavLink>
+            <NavLink icon={Forward} to="/app/absensi/pengajuan">
+              Pengajuan
+            </NavLink>
+          </RoleGate>
+          <RoleGate allowedRole="Admin">
             <NavLink icon={MapPinned} to="/app/absensi/pengaturan">
               Pengaturan Lokasi
             </NavLink>
-          ) : null}
+          </RoleGate>
         </ul>
-        {role === "Admin" ? (
+        <RoleGate allowedRole="Admin">
           <ul className="flex flex-col gap-y-2">
             <span className="text-sm font-bold uppercase tracking-wide">Laporan</span>
             <NavLink icon={Library} to="/app/report">
               Rekap Laporan
             </NavLink>
           </ul>
-        ) : null}
+        </RoleGate>
       </div>
       <Form method="post" action="/app">
         <Button type="submit" variant="destructive" className="w-full">
