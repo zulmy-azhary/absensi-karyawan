@@ -9,17 +9,20 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import { getAbsenceTodayAll } from "~/services/absence.server";
+import { getAbsenceTodayAll, getSubmissionNotApprovedAll } from "~/services/absence.server";
 import { isAdmin } from "~/middlewares/auth.middleware";
 import { getTotalUsers } from "~/services/user.server";
 import { format } from "date-fns";
+import { Button } from "~/components/ui/button";
+import { Check } from "lucide-react";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   await isAdmin(request);
   const totalUsers = await getTotalUsers();
   const allAbsenceToday = await getAbsenceTodayAll();
+  const allSubmissionNotApproved = await getSubmissionNotApprovedAll();
 
-  return json({ totalUsers, allAbsenceToday });
+  return json({ totalUsers, allAbsenceToday, allSubmissionNotApproved });
 };
 
 export const meta: MetaFunction = ({ matches }) => {
@@ -28,11 +31,11 @@ export const meta: MetaFunction = ({ matches }) => {
 };
 
 export default function DashboardIndex() {
-  const { totalUsers, allAbsenceToday } = useLoaderData<typeof loader>();
+  const { totalUsers, allAbsenceToday, allSubmissionNotApproved } = useLoaderData<typeof loader>();
 
   return (
-    <div>
-      <h2 className="text-lg font-medium mb-6">Halaman Dashboard</h2>
+    <div className="space-y-6">
+      <h2 className="text-lg font-medium">Halaman Dashboard</h2>
       <div className="space-y-6">
         <div className="flex flex-row justify-between gap-6">
           <Card className="text-center w-full">
@@ -105,6 +108,48 @@ export default function DashboardIndex() {
                 ) : (
                   <TableRow>
                     <TableCell colSpan={5}>Belum ada absensi hari ini.</TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Pengajuan</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table className="text-center border-y">
+              <TableHeader className="bg-slate-100">
+                <TableRow>
+                  <TableHead>Nama</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Deskripsi</TableHead>
+                  <TableHead>Tanggal</TableHead>
+                  <TableHead>Approve</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {allSubmissionNotApproved.length > 0 ? (
+                  allSubmissionNotApproved.map((absence) => (
+                    <TableRow key={absence.id}>
+                      <TableCell>{absence.name}</TableCell>
+                      <TableCell>{absence.submission?.status}</TableCell>
+                      <TableCell>{absence.submission?.description}</TableCell>
+                      <TableCell>
+                        {format(absence.submission?.startDate!, "dd MMMM yyyy")} -{" "}
+                        {format(absence.submission?.endDate!, "dd MMMM yyyy")}
+                      </TableCell>
+                      <TableCell>
+                        <Button>
+                          <Check className="w-5 h-5" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={5}>Tidak ada pengajuan.</TableCell>
                   </TableRow>
                 )}
               </TableBody>

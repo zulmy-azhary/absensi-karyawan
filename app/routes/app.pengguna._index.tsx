@@ -63,11 +63,11 @@ export default function UserList() {
   }, [actionData, message, toast]);
 
   return (
-    <div className="flex flex-col gap-y-5">
-      <h2 className="text-lg font-medium mb-6">Daftar Pengguna</h2>
+    <div className="space-y-6">
+      <h2 className="text-lg font-medium">Daftar Pengguna</h2>
       <Card className="px-6 py-8">
         <Button variant="default" className="lg:w-fit" asChild>
-          <Link to="/app/pengguna/tambah">Tambah Pengguna</Link>
+          <Link to="/app/pengguna/tambah">Buat Pengguna</Link>
         </Button>
         <Table className="mt-5 text-center border-y">
           <TableHeader className="bg-slate-100">

@@ -5,7 +5,7 @@ import { CircleF, MarkerF, PolylineF } from "@react-google-maps/api";
 import { memo, useCallback, useState } from "react";
 import BaseMap from "~/components/ui/base-map";
 import { type EnvMapType } from "~/routes/app.absensi";
-import { calculateDistance } from "~/lib/calculate-distance";
+import { calculateDistance } from "~/lib/utils";
 import { getTargetLocation } from "~/services/location.server";
 import { Button } from "~/components/ui/button";
 import { createAbsenceAction } from "~/actions/absence.server";
@@ -22,9 +22,10 @@ import { absenceState } from "~/lib/utils";
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const user = await isKaryawan(request);
   const targetInfos = await getTargetLocation();
-  const absence = await getAbsenceTodayByNik(user.nik);
+  const absenceToday = await getAbsenceTodayByNik(user.nik);
+  const absenceStateToday = await absenceState(new Date(), absenceToday?.id);
 
-  return { targetInfos, absence };
+  return { targetInfos, absenceToday, absenceStateToday };
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
@@ -43,12 +44,11 @@ type GMapType = google.maps.Map;
 
 function Absensi() {
   const { gMapsApiKey, gMapsMapId } = useOutletContext<EnvMapType>();
-  const { targetInfos, absence } = useLoaderData<typeof loader>();
+  const { targetInfos, absenceToday, absenceStateToday } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const infos = targetInfos;
   const targetCoords = { lat: infos.lat, lng: infos.lng };
   const [distance, setDistance] = useState(0);
-  const absenceStateToday = absenceState(new Date());
 
   const form = useRemixForm<z.infer<typeof absenceSchema>>({
     resolver: zodResolver(absenceSchema),
@@ -70,8 +70,8 @@ function Absensi() {
   }, []);
 
   return (
-    <div>
-      <h2 className="text-lg font-medium mb-6">Absensi</h2>
+    <div className="space-y-6">
+      <h2 className="text-lg font-medium">Absensi</h2>
       <div className="flex flex-col xl:flex-row gap-x-5">
         <BaseMap
           gMapsApiKey={gMapsApiKey!}
@@ -106,9 +106,11 @@ function Absensi() {
         </BaseMap>
         <div className="flex flex-col basis-2/6 gap-y-6">
           <div className="">
-            {(absence?.status === "Izin" || absence?.status === "Sakit") && (
-              <p>Belum dapat melakukan absen dikarenakan izin/sakit.</p>
-            )}
+            {absenceToday?.submission &&
+              (absenceToday.submission.status === "Izin" ||
+                absenceToday.submission.status === "Sakit") && (
+                <p>Belum dapat melakukan absen dikarenakan izin/sakit.</p>
+              )}
             <p>Jarak: {distance} meter</p>
             <p>{distance > infos.radius ? "Diluar area kerja." : "Didalam area kerja."}</p>
           </div>
@@ -133,17 +135,6 @@ function Absensi() {
               </Button>
             </CustomForm>
           </RemixFormProvider>
-          {/* <div className="flex flex-col gap-y-6">
-            {absence?.attendance.map((absence) => (
-              <div key={absence.id}>
-                <p>{absence.status === "Masuk" ? "Absensi Masuk" : "Absensi Keluar"}</p>
-                <p>Latitude: {absence.lat}</p>
-                <p>Longitude: {absence.lng}</p>
-                <p>Jarak: {absence.distance}</p>
-                <p>Tanggal: {format(new Date(absence.createdAt), "dd MMMM yyyy HH:mm:ss")}</p>
-              </div>
-            ))}
-          </div> */}
         </div>
       </div>
     </div>

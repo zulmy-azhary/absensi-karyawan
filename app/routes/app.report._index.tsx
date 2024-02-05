@@ -27,8 +27,8 @@ export default function Report() {
   console.log(allAbsence);
 
   return (
-    <div>
-      <h2 className="text-lg font-medium mb-6">Laporan</h2>
+    <div className="space-y-6">
+      <h2 className="text-lg font-medium">Laporan</h2>
       <Card className="px-6 py-8">
         <Table className="mt-5 text-center border-y">
           <TableHeader className="bg-slate-100">

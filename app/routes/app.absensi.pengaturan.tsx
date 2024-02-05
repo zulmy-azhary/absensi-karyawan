@@ -67,8 +67,8 @@ export default function SettingLokasi() {
   }, [isEditable]);
 
   return (
-    <div>
-      <h2 className="text-lg font-medium mb-6">Pengaturan Lokasi</h2>
+    <div className="space-y-6">
+      <h2 className="text-lg font-medium">Pengaturan Lokasi</h2>
       <div className="flex flex-col xl:flex-row gap-x-5 gap-y-8">
         <BaseMap
           id="google-maps-settings-id"
