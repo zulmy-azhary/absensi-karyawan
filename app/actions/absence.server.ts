@@ -1,9 +1,9 @@
 import { json } from "@remix-run/node";
 import { getTargetLocation } from "~/services/location.server";
-import { calculateDistance } from "~/lib/calculate-distance";
+import { calculateDistance } from "~/lib/utils";
 import { authenticator } from "~/actions/auth.server";
 import { AuthorizationError } from "remix-auth";
-import { getAbsenceTodayByNik } from "~/services/absence.server";
+import { createAbsence, getAbsenceTodayByNik, getAttendanceById } from "~/services/absence.server";
 import { parseFormData, validateFormData } from "remix-hook-form";
 import type { z } from "zod";
 import { absenceSchema } from "~/schemas/absence.schema";
@@ -41,107 +41,93 @@ export async function createAbsenceAction(request: Request) {
   if (distance > targetInfos.radius) {
     return json({ message: "Diluar jangkauan area kerja." }, { status: 403 });
   }
-
-  // TODO
-  // Cek apakah user sudah melakukan absen atau pengajuan
   const absenceToday = await getAbsenceTodayByNik(user.nik);
 
-  // Cek status apakah user hari ini belum absen
-  if (!absenceToday || absenceToday.status === "Alpa") {
-    const absenceStateToday = absenceState(new Date());
-    console.log(absenceToday);
-
-    if (absenceStateToday === "Belum Bisa Absen Masuk") {
-      return json({ message: "Belum dapat melakukan absen masuk." }, { status: 403 });
-    }
-
-    if (absenceStateToday === "Lakukan Absen Masuk") {
-      //! Logic untuk absen masuk di jam 08:00AM - 09:00AM
-      // Here...
-      await db.absence.upsert({
-        where: { id: absenceToday?.id },
-        create: {
-          name: user.name,
-          nik: user.nik,
-          status: "Hadir",
-          attendance: {
-            create: {
-              lat,
-              lng,
-              distance,
-              status: "Masuk",
-            },
-          },
-        },
-        update: {
-          status: "Hadir",
-          attendance: {
-            create: {
-              lat,
-              lng,
-              distance,
-              status: "Masuk",
-            },
-          },
-        },
-      });
-      return json({ message: "Berhasil melakukan absen masuk." }, { status: 200 });
-    }
-
-    if (absenceStateToday === "Absen Masuk Sudah Lewat") {
-      return json({ message: "Sudah tidak dapat melakukan absen masuk." }, { status: 403 });
-    }
-
-    if (absenceStateToday === "Belum Bisa Absen Keluar") {
-      return json({ message: "Belum dapat melakukan absen keluar." }, { status: 403 });
-    }
-
-    if (absenceStateToday === "Lakukan Absen Keluar") {
-      //! Logic untuk absen keluar di jam 17:00PM - 22:00PM
-      // Here...
-      await db.absence.upsert({
-        where: { id: absenceToday?.id },
-        create: {
-          name: user.name,
-          nik: user.nik,
-          status: "Alpa",
-          attendance: {
-            create: {
-              lat,
-              lng,
-              distance,
-              status: "Keluar",
-            },
-          },
-        },
-        update: {
-          attendance: {
-            create: {
-              lat,
-              lng,
-              distance,
-              status: "Keluar",
-            },
-          },
-        },
-      });
-      return json({ message: "Berhasil melakukan absen keluar." }, { status: 200 });
-    }
-
-    if (absenceStateToday === "Absen Keluar Sudah Lewat") {
-      return json({ message: "Sudah tidak dapat melakukan absen keluar." }, { status: 403 });
-    }
-
-    return;
-  }
-
   // Cek status apakah user izin, atau sakit
-  if (absenceToday.status === "Izin" || absenceToday.status === "Sakit") {
+  if (
+    absenceToday?.submission &&
+    (absenceToday.submission.status === "Izin" || absenceToday.submission.status === "Sakit")
+  ) {
     // Jika Izin atau Sakit dan sudah approved, maka tolak lakukan absensi
     return json(
       { message: "Tidak dapat melakukan absensi dikarenakan sedang izin/sakit." },
       { status: 403 }
     );
+  }
+
+  // TODO
+  // Cek state user hari ini
+  const absenceStateToday = await absenceState(new Date(), absenceToday?.id);
+
+  if (absenceStateToday === "Belum Bisa Absen Masuk") {
+    return json({ message: "Belum dapat melakukan absen masuk." }, { status: 403 });
+  }
+
+  if (absenceStateToday === "Lakukan Absen Masuk") {
+    //! Logic untuk absen masuk di jam 08:00AM - 09:00AM
+    await createAbsence({
+      name: user.name,
+      nik: user.nik,
+      attendance: {
+        create: {
+          lat,
+          lng,
+          distance,
+          status: "Masuk",
+        },
+      },
+    });
+    return json({ message: "Berhasil melakukan absen masuk." }, { status: 200 });
+  }
+
+  if (absenceStateToday === "Sudah Absen Masuk") {
+    return json({ message: "Sudah melakukan absen masuk." }, { status: 403 });
+  }
+
+  if (absenceStateToday === "Absen Masuk Sudah Lewat") {
+    return json({ message: "Sudah tidak dapat melakukan absen masuk." }, { status: 403 });
+  }
+
+  if (absenceStateToday === "Belum Bisa Absen Keluar") {
+    return json({ message: "Belum dapat melakukan absen keluar." }, { status: 403 });
+  }
+
+  if (absenceStateToday === "Lakukan Absen Keluar") {
+    //! Logic untuk absen keluar di jam 17:00PM - 22:00PM
+    await db.absence.upsert({
+      where: { id: absenceToday?.id ?? "" },
+      create: {
+        name: user.name,
+        nik: user.nik,
+        attendance: {
+          create: {
+            lat,
+            lng,
+            distance,
+            status: "Keluar",
+          },
+        },
+      },
+      update: {
+        attendance: {
+          create: {
+            lat,
+            lng,
+            distance,
+            status: "Keluar",
+          },
+        },
+      },
+    });
+    return json({ message: "Berhasil melakukan absen keluar." }, { status: 200 });
+  }
+
+  if (absenceStateToday === "Sudah Absen Keluar") {
+    return json({ message: "Sudah melakukan absen keluar." }, { status: 403 });
+  }
+
+  if (absenceStateToday === "Absen Keluar Sudah Lewat") {
+    return json({ message: "Sudah tidak dapat melakukan absen keluar." }, { status: 403 });
   }
 
   return json({ message: "Berhasil melakukan absen." }, { status: 200 });

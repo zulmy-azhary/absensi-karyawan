@@ -36,7 +36,6 @@ export async function createPengajuanAction(request: Request) {
   await createAbsence({
     nik: user.nik,
     name: user.name,
-    status: title,
     createdAt: date.from,
     submission: {
       create: {
@@ -49,4 +48,8 @@ export async function createPengajuanAction(request: Request) {
   });
 
   return json({ message: "Sukses membuat pengajuan." }, { status: 200 });
+}
+
+export const handleApproval = async (id: string) => {
+  // Not implement yet
 }

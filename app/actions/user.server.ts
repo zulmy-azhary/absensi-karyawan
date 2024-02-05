@@ -37,24 +37,14 @@ export async function createUserAction(request: Request) {
   const hashedPassword = hashPassword(data.password);
 
   try {
-    const createdUser = db.user.create({
+    // Create user
+    await db.user.create({
       data: {
         nik: data.nik,
         name: data.name,
         password: hashedPassword,
       },
     });
-
-    const createdDefaultAbsence = db.absence.create({
-      data: {
-        nik: data.nik,
-        name: data.name,
-        status: "Alpa",
-      },
-    });
-
-    // Create user and default absence
-    await db.$transaction([createdUser, createdDefaultAbsence]);
 
     // Create session for message, and render into index route
     const session = await getSession(request.headers.get("Cookie"));
