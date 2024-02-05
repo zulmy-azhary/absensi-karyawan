@@ -32,7 +32,6 @@ model Absence {
   name       String
   nik        String
   attendance AbsenceAttendance[]
-  status     AbsenceStatus
   submission AbsenceSubmission?
   createdAt  DateTime            @default(now())
   updatedAt  DateTime            @default(now()) @updatedAt
@@ -50,13 +49,13 @@ model AbsenceAttendance {
 }
 
 model AbsenceSubmission {
-  id          String        @unique
-  status      AbsenceStatus
-  description String        @db.Text
-  isApproved  Boolean       @default(false)
+  id          String           @unique
+  status      SubmissionStatus
+  description String           @db.Text
+  isApproved  Boolean          @default(false)
   startDate   DateTime
   endDate     DateTime
-  absence     Absence       @relation(fields: [id], references: [id], onDelete: Cascade)
+  absence     Absence          @relation(fields: [id], references: [id], onDelete: Cascade)
 }
 
 enum Role {
@@ -64,9 +63,7 @@ enum Role {
   Karyawan
 }
 
-enum AbsenceStatus {
-  Hadir
-  Alpa
+enum SubmissionStatus {
   Izin
   Sakit
 }
