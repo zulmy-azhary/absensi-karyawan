@@ -1,5 +1,10 @@
-import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import {
+  ActionFunctionArgs,
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
+import { useActionData, useLoaderData } from "@remix-run/react";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import {
   Table,
@@ -13,8 +18,12 @@ import { getAbsenceTodayAll, getSubmissionNotApprovedAll } from "~/services/abse
 import { isAdmin } from "~/middlewares/auth.middleware";
 import { getTotalUsers } from "~/services/user.server";
 import { format } from "date-fns";
-import { Button } from "~/components/ui/button";
-import { Check } from "lucide-react";
+import { Badge } from "~/components/ui/badge";
+import { ApprovalModal } from "~/components/modal/approval-modal";
+import { parseFormData } from "remix-hook-form";
+import { handleApproval } from "~/actions/pengajuan.server";
+import { useEffect } from "react";
+import { toast } from "sonner";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   await isAdmin(request);
@@ -25,6 +34,17 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   return json({ totalUsers, allAbsenceToday, allSubmissionNotApproved });
 };
 
+export const action = async ({ request }: ActionFunctionArgs) => {
+  const requestCloned = request.clone();
+  const { action } = await parseFormData<{ action: "APPROVAL" }>(request);
+
+  if (action === "APPROVAL") {
+    return await handleApproval(requestCloned);
+  }
+
+  throw new Error("Unknown action.");
+};
+
 export const meta: MetaFunction = ({ matches }) => {
   const parentMeta = matches.flatMap((match) => match.meta ?? []);
   return [...parentMeta, { title: "Absensi Karyawan | Dashboard" }];
@@ -32,6 +52,18 @@ export const meta: MetaFunction = ({ matches }) => {
 
 export default function DashboardIndex() {
   const { totalUsers, allAbsenceToday, allSubmissionNotApproved } = useLoaderData<typeof loader>();
+  const actionData = useActionData<typeof action>();
+
+  useEffect(() => {
+    if (!actionData || !actionData.message) return;
+
+    if (actionData.status === 200) {
+      toast.success(actionData.message);
+      return;
+    }
+
+    toast.error(actionData.message);
+  }, [actionData]);
 
   return (
     <div className="space-y-6">
@@ -51,7 +83,9 @@ export default function DashboardIndex() {
               <CardTitle>Total Hadir</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-semibold">0</p>
+              <p className="text-3xl font-semibold">
+                {allAbsenceToday.filter((absence) => absence.attendance.length === 2).length}
+              </p>
             </CardContent>
           </Card>
           <Card className="text-center w-full">
@@ -59,7 +93,13 @@ export default function DashboardIndex() {
               <CardTitle>Total Alpa</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-semibold">0</p>
+              <p className="text-3xl font-semibold">
+                {
+                  allAbsenceToday.filter(
+                    (absence) => !absence.submission && absence.attendance.length !== 2
+                  ).length
+                }
+              </p>
             </CardContent>
           </Card>
           <Card className="text-center w-full">
@@ -67,7 +107,9 @@ export default function DashboardIndex() {
               <CardTitle>Total Izin</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-semibold">0</p>
+              <p className="text-3xl font-semibold">
+                {allAbsenceToday.filter((absence) => absence.submission?.status === "Izin").length}
+              </p>
             </CardContent>
           </Card>
           <Card className="text-center w-full">
@@ -75,7 +117,9 @@ export default function DashboardIndex() {
               <CardTitle>Total Sakit</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-semibold">0</p>
+              <p className="text-3xl font-semibold">
+                {allAbsenceToday.filter((absence) => absence.submission?.status === "Sakit").length}
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -96,15 +140,38 @@ export default function DashboardIndex() {
               </TableHeader>
               <TableBody>
                 {allAbsenceToday.length > 0 ? (
-                  allAbsenceToday.map((absence) => (
-                    <TableRow key={absence.id}>
-                      <TableCell>{absence.name}</TableCell>
-                      <TableCell>{absence.nik}</TableCell>
-                      <TableCell>{format(absence.createdAt, "dd MMMM yyyy")}</TableCell>
-                      <TableCell></TableCell>
-                      <TableCell></TableCell>
-                    </TableRow>
-                  ))
+                  allAbsenceToday.map((absence) => {
+                    const absenMasuk = absence.attendance.find((item) => item.status === "Masuk");
+                    const absenKeluar = absence.attendance.find((item) => item.status === "Keluar");
+
+                    return (
+                      <TableRow key={absence.id}>
+                        <TableCell>{absence.name}</TableCell>
+                        <TableCell>{absence.nik}</TableCell>
+                        <TableCell>
+                          {absenMasuk ? format(absenMasuk.createdAt, "HH:mm a") : "-"}
+                        </TableCell>
+                        <TableCell>
+                          {absenKeluar ? format(absenKeluar.createdAt, "HH:mm a") : "-"}
+                        </TableCell>
+                        <TableCell>
+                          {absence.attendance.length > 0 ? (
+                            <Badge
+                              className="min-w-[4rem] justify-center"
+                              variant={absence.attendance.length === 2 ? "success" : "destructive"}
+                            >
+                              {absence.attendance.findLast((absence) => absence.status)?.status}
+                            </Badge>
+                          ) : null}
+                          {absence.submission ? (
+                            <Badge className="min-w-[4rem] justify-center" variant={"warning"}>
+                              {absence.submission.status}
+                            </Badge>
+                          ) : null}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
                 ) : (
                   <TableRow>
                     <TableCell colSpan={5}>Belum ada absensi hari ini.</TableCell>
@@ -137,13 +204,11 @@ export default function DashboardIndex() {
                       <TableCell>{absence.submission?.status}</TableCell>
                       <TableCell>{absence.submission?.description}</TableCell>
                       <TableCell>
-                        {format(absence.submission?.startDate!, "dd MMMM yyyy")} -{" "}
-                        {format(absence.submission?.endDate!, "dd MMMM yyyy")}
+                        {format(absence.submission!.startDate, "dd MMMM yyyy")} -{" "}
+                        {format(absence.submission!.endDate, "dd MMMM yyyy")}
                       </TableCell>
                       <TableCell>
-                        <Button>
-                          <Check className="w-5 h-5" />
-                        </Button>
+                        <ApprovalModal absence={absence} />
                       </TableCell>
                     </TableRow>
                   ))
