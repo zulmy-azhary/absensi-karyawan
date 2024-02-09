@@ -3,10 +3,10 @@ import { Form } from "@remix-run/react";
 import { DialogClose, DialogFooter, DialogHeader, DialogTitle } from "~/components/ui/dialog";
 import { CustomInput } from "~/components/ui/custom-input";
 import { Button } from "~/components/ui/button";
-import { z } from "zod";
+import type { z } from "zod";
 import { updateUserSchema } from "~/schemas/user.schema";
-import { SerializeFrom } from "@remix-run/node";
-import { UserType } from "~/types";
+import type { SerializeFrom } from "@remix-run/node";
+import type { UserType } from "~/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 type UpdateUserFormProps = {

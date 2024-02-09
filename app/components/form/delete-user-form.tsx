@@ -21,7 +21,6 @@ type DeleteUserFormProps = {
 export const DeleteUserForm = ({ user }: DeleteUserFormProps) => {
   const form = useRemixForm<z.infer<typeof deleteUserSchema>>({
     resolver: zodResolver(deleteUserSchema),
-    mode: "onChange",
     defaultValues: {
       nik: user.nik,
     },
@@ -31,12 +30,11 @@ export const DeleteUserForm = ({ user }: DeleteUserFormProps) => {
   });
 
   return (
-    <Form method="post" onSubmit={form.handleSubmit}>
+    <Form method="post" onSubmit={form.handleSubmit} className="space-y-8 w-full">
       <AlertDialogHeader className="gap-y-2">
         <AlertDialogTitle className="text-center">
           Apakah anda yakin ingin menghapus akun ini?
         </AlertDialogTitle>
-        <input type="hidden" name="nik" value={user.nik} />
         <AlertDialogDescription className="flex flex-col gap-y-0.5 text-center">
           <strong className="text-primary">Nama: {user.name}</strong>
           <strong className="text-primary">Nik: {user.nik}</strong>

@@ -2,7 +2,7 @@ import { RemixFormProvider, useRemixForm } from "remix-hook-form";
 import { CustomInput } from "~/components/ui/custom-input";
 import { CustomForm } from "~/components/ui/custom-form";
 import { Button } from "~/components/ui/button";
-import { z } from "zod";
+import type { z } from "zod";
 import { loginSchema } from "~/schemas/user.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 
