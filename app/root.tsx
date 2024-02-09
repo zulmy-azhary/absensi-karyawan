@@ -9,7 +9,7 @@ import {
   ScrollRestoration,
 } from "@remix-run/react";
 import stylesheets from "~/tailwind.css";
-import { Toaster } from "~/components/ui/toaster";
+import { Toaster } from "~/components/ui/sonner";
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: stylesheets },
@@ -28,7 +28,7 @@ export default function App() {
       </head>
       <body>
         <Outlet />
-        <Toaster />
+        <Toaster richColors theme="light" />
         <ScrollRestoration />
         <Scripts />
         <LiveReload />
