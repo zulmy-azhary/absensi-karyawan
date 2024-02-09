@@ -5,7 +5,7 @@ import { SelectItem } from "~/components/ui/select";
 import { DatePickerWithRange } from "~/components/ui/date-range-picker";
 import { CustomTextarea } from "~/components/ui/custom-textarea";
 import { Button } from "~/components/ui/button";
-import { z } from "zod";
+import type { z } from "zod";
 import { pengajuanSchema } from "~/schemas/pengajuan.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 

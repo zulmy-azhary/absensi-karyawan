@@ -18,3 +18,7 @@ export const pengajuanSchema = z.object({
   ),
   description: z.string().min(1, "Keterangan tidak boleh kosong."),
 });
+
+export const approvalSchema = z.object({
+  absenceId: z.string(),
+});
