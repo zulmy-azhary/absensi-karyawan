@@ -19,8 +19,8 @@ export async function updateTargetLocation(request: Request) {
 
   try {
     await updateTargetLocationById(data.id, data);
-    return json({ message: "Berhasil menyimpan perubahan lokasi." }, { status: 200 });
+    return json({ status: 200, message: "Berhasil menyimpan perubahan lokasi." }, { status: 200 });
   } catch {
-    return json({ message: "Gagal menyimpan perubahan. Silahkan coba lagi." }, { status: 500 });
+    return json({ status: 500, message: "Gagal menyimpan perubahan. Silahkan coba lagi." }, { status: 500 });
   }
 }

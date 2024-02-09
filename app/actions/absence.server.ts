@@ -1,14 +1,13 @@
 import { json } from "@remix-run/node";
 import { getTargetLocation } from "~/services/location.server";
-import { calculateDistance } from "~/lib/utils";
+import { calculateDistance, absenceState } from "~/lib/utils";
 import { authenticator } from "~/actions/auth.server";
 import { AuthorizationError } from "remix-auth";
-import { createAbsence, getAbsenceTodayByNik, getAttendanceById } from "~/services/absence.server";
+import { createAbsence, getAbsenceTodayByNik } from "~/services/absence.server";
 import { parseFormData, validateFormData } from "remix-hook-form";
 import type { z } from "zod";
 import { absenceSchema } from "~/schemas/absence.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { absenceState } from "~/lib/utils";
 import { db } from "~/lib/db";
 
 export async function createAbsenceAction(request: Request) {
@@ -33,13 +32,13 @@ export async function createAbsenceAction(request: Request) {
   // Jika lokasi target tidak ditemukan, tampilkan pesan error
   const targetInfos = await getTargetLocation();
   if (!targetInfos) {
-    return json({ message: "Tidak ditemukan lokasi target." }, { status: 500 });
+    return json({ status: 403, message: "Tidak ditemukan lokasi target." }, { status: 403 });
   }
 
   // Jika lokasi user saat ini diluar jangkauan area kerja, maka tampilkan pesan error
   const distance = calculateDistance({ lat, lng }, targetInfos);
   if (distance > targetInfos.radius) {
-    return json({ message: "Diluar jangkauan area kerja." }, { status: 403 });
+    return json({ status: 403, message: "Diluar jangkauan area kerja." }, { status: 403 });
   }
   const absenceToday = await getAbsenceTodayByNik(user.nik);
 
@@ -50,7 +49,7 @@ export async function createAbsenceAction(request: Request) {
   ) {
     // Jika Izin atau Sakit dan sudah approved, maka tolak lakukan absensi
     return json(
-      { message: "Tidak dapat melakukan absensi dikarenakan sedang izin/sakit." },
+      { status: 403, message: "Tidak dapat melakukan absensi dikarenakan sedang izin/sakit." },
       { status: 403 }
     );
   }
@@ -60,7 +59,7 @@ export async function createAbsenceAction(request: Request) {
   const absenceStateToday = await absenceState(new Date(), absenceToday?.id);
 
   if (absenceStateToday === "Belum Bisa Absen Masuk") {
-    return json({ message: "Belum dapat melakukan absen masuk." }, { status: 403 });
+    return json({ status: 403, message: "Belum dapat melakukan absen masuk." }, { status: 403 });
   }
 
   if (absenceStateToday === "Lakukan Absen Masuk") {
@@ -77,19 +76,22 @@ export async function createAbsenceAction(request: Request) {
         },
       },
     });
-    return json({ message: "Berhasil melakukan absen masuk." }, { status: 200 });
+    return json({ status: 200, message: "Berhasil melakukan absen masuk." }, { status: 200 });
   }
 
   if (absenceStateToday === "Sudah Absen Masuk") {
-    return json({ message: "Sudah melakukan absen masuk." }, { status: 403 });
+    return json({ status: 403, message: "Sudah melakukan absen masuk." }, { status: 403 });
   }
 
   if (absenceStateToday === "Absen Masuk Sudah Lewat") {
-    return json({ message: "Sudah tidak dapat melakukan absen masuk." }, { status: 403 });
+    return json(
+      { status: 403, message: "Sudah tidak dapat melakukan absen masuk." },
+      { status: 403 }
+    );
   }
 
   if (absenceStateToday === "Belum Bisa Absen Keluar") {
-    return json({ message: "Belum dapat melakukan absen keluar." }, { status: 403 });
+    return json({ status: 403, message: "Belum dapat melakukan absen keluar." }, { status: 403 });
   }
 
   if (absenceStateToday === "Lakukan Absen Keluar") {
@@ -119,16 +121,19 @@ export async function createAbsenceAction(request: Request) {
         },
       },
     });
-    return json({ message: "Berhasil melakukan absen keluar." }, { status: 200 });
+    return json({ status: 200, message: "Berhasil melakukan absen keluar." }, { status: 200 });
   }
 
   if (absenceStateToday === "Sudah Absen Keluar") {
-    return json({ message: "Sudah melakukan absen keluar." }, { status: 403 });
+    return json({ status: 403, message: "Sudah melakukan absen keluar." }, { status: 403 });
   }
 
   if (absenceStateToday === "Absen Keluar Sudah Lewat") {
-    return json({ message: "Sudah tidak dapat melakukan absen keluar." }, { status: 403 });
+    return json(
+      { status: 403, message: "Sudah tidak dapat melakukan absen keluar." },
+      { status: 403 }
+    );
   }
 
-  return json({ message: "Berhasil melakukan absen." }, { status: 200 });
+  return json({ status: 200, message: "Berhasil melakukan absen." }, { status: 200 });
 }
