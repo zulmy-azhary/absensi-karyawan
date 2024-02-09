@@ -1,6 +1,5 @@
-import { json, redirect } from "@remix-run/node";
+import { json } from "@remix-run/node";
 import { db } from "~/lib/db";
-import { commitSession, getSession } from "~/services/session.server";
 import { getAbsenceByNik } from "~/services/absence.server";
 import {
   deleteUserByNik,
@@ -29,7 +28,7 @@ export async function createUserAction(request: Request) {
   const isUserExist = await getUserByNik(data.nik);
   if (isUserExist) {
     return json(
-      { message: `NIK ${data.nik} sudah ada. Silahkan gunakan yang lain.` },
+      { status: 403, message: `NIK ${data.nik} sudah ada. Silahkan gunakan yang lain.` },
       { status: 403 }
     );
   }
@@ -45,17 +44,13 @@ export async function createUserAction(request: Request) {
         password: hashedPassword,
       },
     });
-
-    // Create session for message, and render into index route
-    const session = await getSession(request.headers.get("Cookie"));
-    session.flash("successCreateUserKey", "Sukses menambahkan pengguna.");
-    return redirect("/app/pengguna", {
-      headers: {
-        "Set-Cookie": await commitSession(session),
-      },
-    });
+    
+    return json({ status: 200, message: "Sukses menambahkan pengguna." }, { status: 200 });
   } catch {
-    return json({ message: "Gagal menambahkan pengguna. Silahkan coba lagi." }, { status: 500 });
+    return json(
+      { status: 500, message: "Gagal menambahkan pengguna. Silahkan coba lagi." },
+      { status: 500 }
+    );
   }
 }
 
@@ -76,9 +71,12 @@ export async function updateUser(request: Request) {
     const hasPassword = password ? { password: hashPassword(password) } : null;
     await updateUserByNik(data.nik, { ...hasPassword, ...infos });
 
-    return json({ message: "Berhasil memperbarui pengguna." }, { status: 200 });
+    return json({ status: 200, message: "Berhasil memperbarui pengguna." }, { status: 200 });
   } catch {
-    return json({ message: "Gagal memperbarui pengguna. Silahkan coba lagi." }, { status: 500 });
+    return json(
+      { status: 500, message: "Gagal memperbarui pengguna. Silahkan coba lagi." },
+      { status: 500 }
+    );
   }
 }
 
@@ -95,15 +93,11 @@ export async function deleteUser(request: Request) {
 
   const absence = await getAbsenceByNik(data.nik);
   if (absence) {
-    // const deleteAbsenceAttendance = db.absenceAttendance.deleteMany({
-    //   where: { attendanceId: absence.id },
-    // });
     await db.absence.deleteMany({
       where: { nik: data.nik },
     });
-    // await db.$transaction([deleteAbsenceAttendance, deleteAbsence]);
   }
   await deleteUserByNik(data.nik);
 
-  return json({ message: "Sukses menghapus pengguna.", data: absence }, { status: 200 });
+  return json({ status: 200, message: "Sukses menghapus pengguna." }, { status: 200 });
 }

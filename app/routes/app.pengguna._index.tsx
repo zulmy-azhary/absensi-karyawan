@@ -1,12 +1,10 @@
 import {
   json,
   type ActionFunctionArgs,
-  type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
-import { Link, useActionData, useLoaderData } from "@remix-run/react";
+import { useActionData, useLoaderData } from "@remix-run/react";
 import { useEffect } from "react";
-import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
 import {
   Table,
@@ -16,26 +14,28 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import { UpdateUserModal } from "~/components/ui/update-user-modal";
-import { DeleteUserModal } from "~/components/ui/delete-user-modal";
-import { useToast } from "~/components/ui/use-toast";
-import { commitSession, getSession } from "~/services/session.server";
-import { deleteUser, updateUser } from "~/actions/user.server";
+import { UpdateUserModal } from "~/components/modal/update-user-modal";
+import { DeleteUserModal } from "~/components/modal/delete-user-modal";
+import { createUserAction, deleteUser, updateUser } from "~/actions/user.server";
 import type { ActionType } from "~/types";
 import { getUsers } from "~/services/user.server";
 import { parseFormData } from "remix-hook-form";
+import { toast } from "sonner";
+import { CreateUserModal } from "~/components/modal/create-user-modal";
 
-export const loader = async ({ request }: LoaderFunctionArgs) => {
+export const loader = async () => {
   const users = await getUsers();
-  const session = await getSession(request.headers.get("Cookie"));
-  const message = (session.get("successCreateUserKey") as string) || null;
 
-  return json({ users, message }, { headers: { "Set-Cookie": await commitSession(session) } });
+  return json({ users });
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const requestCloned = request.clone();
   const { action } = await parseFormData<{ action: ActionType }>(request);
+
+  if (action === "CREATE") {
+    return await createUserAction(requestCloned);
+  }
 
   if (action === "UPDATE") {
     return await updateUser(requestCloned);
@@ -53,22 +53,25 @@ export const meta: MetaFunction = () => {
 };
 
 export default function UserList() {
-  const { users, message } = useLoaderData<typeof loader>();
+  const { users } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const { toast } = useToast();
 
   useEffect(() => {
-    if (!actionData && !message) return;
-    toast({ description: message || actionData?.message });
-  }, [actionData, message, toast]);
+    if (!actionData) return;
+
+    if (actionData.status === 200) {
+      toast.success(actionData.message);
+      return;
+    }
+
+    toast.error(actionData.message);
+  }, [actionData]);
 
   return (
     <div className="space-y-6">
       <h2 className="text-lg font-medium">Daftar Pengguna</h2>
       <Card className="px-6 py-8">
-        <Button variant="default" className="lg:w-fit" asChild>
-          <Link to="/app/pengguna/tambah">Buat Pengguna</Link>
-        </Button>
+        <CreateUserModal />
         <Table className="mt-5 text-center border-y">
           <TableHeader className="bg-slate-100">
             <TableRow>
