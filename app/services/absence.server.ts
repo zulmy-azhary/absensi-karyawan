@@ -63,6 +63,13 @@ export const getAbsenceByNik = async (nik: string) => {
   });
 };
 
+export const getAbsenceById = async (id: string) => {
+  return await db.absence.findFirst({
+    where: { id },
+    include: { attendance: true, submission: true },
+  });
+};
+
 export const getAbsenceAll = async () => {
   return await db.absence.findMany({
     include: { attendance: true },
