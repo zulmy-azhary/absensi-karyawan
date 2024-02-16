@@ -109,3 +109,12 @@ export async function absenceState(date: Date, absenceId?: string): Promise<Abse
     return "Absen Keluar Sudah Lewat";
   }
 }
+
+// Utility untuk format date ke timezone makassar
+export function dateParsed(date: Date | string) {
+  return new Date(
+    (typeof date === "string" ? new Date(date) : date).toLocaleString("en-US", {
+      timeZone: "Asia/Makassar",
+    })
+  );
+}
