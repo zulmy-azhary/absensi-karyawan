@@ -5,7 +5,7 @@ import { CircleF, MarkerF, PolylineF } from "@react-google-maps/api";
 import { memo, useCallback, useState } from "react";
 import BaseMap from "~/components/ui/base-map";
 import { type EnvMapType } from "~/routes/app.absensi";
-import { calculateDistance, absenceState } from "~/lib/utils";
+import { calculateDistance, absenceState, dateParsed } from "~/lib/utils";
 import { getTargetLocation } from "~/services/location.server";
 import { Button } from "~/components/ui/button";
 import { createAbsenceAction } from "~/actions/absence.server";
@@ -22,7 +22,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const user = await isKaryawan(request);
   const targetInfos = await getTargetLocation();
   const absenceToday = await getAbsenceTodayByNik(user.nik);
-  const absenceStateToday = await absenceState(new Date(), absenceToday?.id);
+  const absenceStateToday = await absenceState(dateParsed(new Date()), absenceToday?.id);
 
   return { targetInfos, absenceToday, absenceStateToday };
 };

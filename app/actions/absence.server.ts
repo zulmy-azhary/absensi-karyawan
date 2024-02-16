@@ -1,6 +1,6 @@
 import { json } from "@remix-run/node";
 import { getTargetLocation } from "~/services/location.server";
-import { calculateDistance, absenceState } from "~/lib/utils";
+import { calculateDistance, absenceState, dateParsed } from "~/lib/utils";
 import { authenticator } from "~/actions/auth.server";
 import { AuthorizationError } from "remix-auth";
 import { createAbsence, getAbsenceTodayByNik } from "~/services/absence.server";
@@ -56,7 +56,7 @@ export async function createAbsenceAction(request: Request) {
 
   // TODO
   // Cek state user hari ini
-  const absenceStateToday = await absenceState(new Date(), absenceToday?.id);
+  const absenceStateToday = await absenceState(dateParsed(new Date()), absenceToday?.id);
 
   if (absenceStateToday === "Belum Bisa Absen Masuk") {
     return json({ status: 403, message: "Belum dapat melakukan absen masuk." }, { status: 403 });
