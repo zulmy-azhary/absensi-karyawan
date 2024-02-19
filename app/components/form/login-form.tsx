@@ -35,7 +35,7 @@ export const LoginForm = ({ actionData }: LoginFormProps) => {
           placeholder="Masukkan Password..."
           disabled={form.formState.isSubmitting}
         />
-        <Button type="submit" disabled={form.formState.isSubmitting}>
+        <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
           {form.formState.isSubmitting ? "Memproses..." : "Login"}
         </Button>
       </CustomForm>
