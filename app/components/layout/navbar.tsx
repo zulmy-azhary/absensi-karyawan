@@ -59,7 +59,7 @@ export default function Navbar(props: NavbarProps) {
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
-            <Form method="post">
+            <Form method="post" action="/app">
               <Button type="submit" variant="destructive" className="grow text-start">
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Logout</span>
