@@ -3,16 +3,16 @@ import { userSchema } from "~/schemas/user.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { z } from "zod";
 import { CustomInput } from "~/components/ui/custom-input";
-import {
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "~/components/ui/alert-dialog";
+import { DialogClose, DialogFooter, DialogHeader, DialogTitle } from "~/components/ui/dialog";
 import { Form } from "@remix-run/react";
+import React from "react";
+import { Button } from "~/components/ui/button";
 
-export const CreateUserForm = () => {
+type CreateUserFormProps = {
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+};
+
+export const CreateUserForm = ({ setOpen }: CreateUserFormProps) => {
   const form = useRemixForm<z.infer<typeof userSchema>>({
     resolver: zodResolver(userSchema),
     mode: "onChange",
@@ -29,9 +29,19 @@ export const CreateUserForm = () => {
 
   return (
     <RemixFormProvider {...form}>
-      <Form method="post" onSubmit={form.handleSubmit} className="space-y-8 w-full">
-        <AlertDialogHeader className="gap-y-8">
-          <AlertDialogTitle>Tambah Pengguna</AlertDialogTitle>
+      <Form
+        method="post"
+        onSubmit={(e) => {
+          form.handleSubmit(e);
+          if (form.formState.isValid) {
+            setOpen(false);
+            form.reset();
+          }
+        }}
+        className="space-y-8 w-full"
+      >
+        <DialogHeader className="gap-y-8">
+          <DialogTitle>Tambah Pengguna</DialogTitle>
           <div className="flex flex-col gap-y-2">
             <CustomInput
               name="name"
@@ -60,13 +70,15 @@ export const CreateUserForm = () => {
               disabled={form.formState.isSubmitting}
             />
           </div>
-        </AlertDialogHeader>
-        <AlertDialogFooter className="justify-center">
-          <AlertDialogCancel>Batal</AlertDialogCancel>
-          <AlertDialogAction type="submit" disabled={form.formState.isSubmitting}>
+        </DialogHeader>
+        <DialogFooter className="justify-center">
+          <DialogClose asChild>
+            <Button variant="outline">Batal</Button>
+          </DialogClose>
+          <Button type="submit" disabled={form.formState.isSubmitting}>
             {form.formState.isSubmitting ? "Memproses..." : "Tambah Pengguna"}
-          </AlertDialogAction>
-        </AlertDialogFooter>
+          </Button>
+        </DialogFooter>
       </Form>
     </RemixFormProvider>
   );
