@@ -4,7 +4,8 @@ import { isKaryawan } from "~/middlewares/auth.middleware";
 import { getAbsenceAllByNik } from "~/services/absence.server";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
-import { format } from "date-fns";
+import { addDays, format } from "date-fns";
+import { dateParsed } from "~/lib/utils";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await isKaryawan(request);
@@ -24,12 +25,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
     .filter((absence) => absence.submission?.isApproved)
     .flatMap((absence) => {
       return {
-        title: `${format(new Date(absence.submission?.startDate!), "dd MMMM yyyy")}-${format(
-          new Date(absence.submission?.endDate!),
+        title: `${format(dateParsed(absence.submission?.startDate!), "dd MMMM yyyy")}-${format(
+          dateParsed(absence.submission?.endDate!),
           "dd MMMM yyyy"
         )}: ${absence.submission?.description}`,
-        start: format(absence.submission?.startDate!, "yyyy-MM-dd"),
-        end: format(absence.submission?.endDate!, "yyyy-MM-dd"),
+        start: format(dateParsed(absence.submission?.startDate!), "yyyy-MM-dd"),
+        end: format(addDays(dateParsed(absence.submission?.endDate!), 1), "yyyy-MM-dd"),
         className: "bg-yellow-400 pl-2",
         textColor: "#000",
       };

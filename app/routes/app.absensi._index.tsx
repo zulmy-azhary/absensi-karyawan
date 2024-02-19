@@ -119,7 +119,6 @@ function Absensi() {
                   actionData={actionData}
                   method="post"
                   action="/app/absensi?index"
-                  className="flex flex-col gap-y-6"
                 >
                   <CustomInput readOnly label="Latitude" name="lat" />
                   <CustomInput readOnly label="Longitude" name="lng" />

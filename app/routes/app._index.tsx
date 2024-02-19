@@ -24,7 +24,6 @@ import { parseFormData } from "remix-hook-form";
 import { handleApproval } from "~/actions/pengajuan.server";
 import { useEffect } from "react";
 import { toast } from "sonner";
-import { dateParsed } from "~/lib/utils";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   await isAdmin(request);
@@ -65,8 +64,6 @@ export default function DashboardIndex() {
 
     toast.error(actionData.message);
   }, [actionData]);
-
-  console.log("Now: ", format(dateParsed(new Date()), "dd-MM-yyyy HH:mm:ss a"));
 
   return (
     <div className="space-y-6">
