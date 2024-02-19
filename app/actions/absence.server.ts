@@ -9,6 +9,7 @@ import type { z } from "zod";
 import { absenceSchema } from "~/schemas/absence.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { db } from "~/lib/db";
+import { isWeekend } from "date-fns";
 
 export async function createAbsenceAction(request: Request) {
   // Validate user's input
@@ -54,9 +55,18 @@ export async function createAbsenceAction(request: Request) {
     );
   }
 
-  // TODO
+  const dateNow = dateParsed(new Date());
+
+  // Cek apakah hari ini adalah weekend (sabtu dan minggu)
+  if (isWeekend(dateNow)) {
+    return json(
+      { status: 403, message: "Tidak dapat melakukan absensi di akhir pekan." },
+      { status: 403 }
+    );
+  }
+
   // Cek state user hari ini
-  const absenceStateToday = await absenceState(dateParsed(new Date()), absenceToday?.id);
+  const absenceStateToday = await absenceState(dateNow, absenceToday?.id);
 
   if (absenceStateToday === "Belum Bisa Absen Masuk") {
     return json({ status: 403, message: "Belum dapat melakukan absen masuk." }, { status: 403 });
