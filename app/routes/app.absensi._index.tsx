@@ -115,15 +115,12 @@ function Absensi() {
                 <p>{distance > infos.radius ? "Diluar area kerja." : "Didalam area kerja."}</p>
               </div>
               <RemixFormProvider {...form}>
-                <CustomForm
-                  actionData={actionData}
-                  method="post"
-                  action="/app/absensi?index"
-                >
+                <CustomForm actionData={actionData} method="post" action="/app/absensi?index">
                   <CustomInput readOnly label="Latitude" name="lat" />
                   <CustomInput readOnly label="Longitude" name="lng" />
                   <Button
                     type="submit"
+                    className="w-full"
                     disabled={
                       distance > infos.radius ||
                       (absenceStateToday !== "Lakukan Absen Masuk" &&
