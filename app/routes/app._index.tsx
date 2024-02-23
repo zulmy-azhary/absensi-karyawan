@@ -30,8 +30,26 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const totalUsers = await getTotalUsers();
   const allAbsenceToday = await getAbsenceTodayAll();
   const allSubmissionNotApproved = await getSubmissionNotApprovedAll();
+  const totalAbsences = allAbsenceToday.filter((absence) => absence.attendance.length === 2).length;
+  const totalPermissions = allAbsenceToday.filter(
+    (absence) => absence.submission?.status === "Izin"
+  ).length;
+  const totalSicks = allAbsenceToday.filter(
+    (absence) => absence.submission?.status === "Sakit"
+  ).length;
+  const totalNotAbsences = totalUsers - (totalAbsences + totalPermissions + totalSicks);
 
-  return json({ totalUsers, allAbsenceToday, allSubmissionNotApproved });
+  return json({
+    allAbsenceToday,
+    allSubmissionNotApproved,
+    total: {
+      users: totalUsers,
+      absences: totalAbsences,
+      notAbsences: totalNotAbsences,
+      permisions: totalPermissions,
+      sicks: totalSicks,
+    },
+  });
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
@@ -51,7 +69,7 @@ export const meta: MetaFunction = ({ matches }) => {
 };
 
 export default function DashboardIndex() {
-  const { totalUsers, allAbsenceToday, allSubmissionNotApproved } = useLoaderData<typeof loader>();
+  const { total, allAbsenceToday, allSubmissionNotApproved } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
 
   useEffect(() => {
@@ -75,7 +93,7 @@ export default function DashboardIndex() {
               <CardTitle>Total Karyawan</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-semibold">{totalUsers}</p>
+              <p className="text-3xl font-semibold">{total.users}</p>
             </CardContent>
           </Card>
           <Card className="text-center w-full">
@@ -83,9 +101,7 @@ export default function DashboardIndex() {
               <CardTitle>Total Hadir</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-semibold">
-                {allAbsenceToday.filter((absence) => absence.attendance.length === 2).length}
-              </p>
+              <p className="text-3xl font-semibold">{total.absences}</p>
             </CardContent>
           </Card>
           <Card className="text-center w-full">
@@ -93,13 +109,7 @@ export default function DashboardIndex() {
               <CardTitle>Total Alpa</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-semibold">
-                {
-                  allAbsenceToday.filter(
-                    (absence) => !absence.submission && absence.attendance.length !== 2
-                  ).length
-                }
-              </p>
+              <p className="text-3xl font-semibold">{total.notAbsences}</p>
             </CardContent>
           </Card>
           <Card className="text-center w-full">
@@ -107,9 +117,7 @@ export default function DashboardIndex() {
               <CardTitle>Total Izin</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-semibold">
-                {allAbsenceToday.filter((absence) => absence.submission?.status === "Izin").length}
-              </p>
+              <p className="text-3xl font-semibold">{total.permisions}</p>
             </CardContent>
           </Card>
           <Card className="text-center w-full">
@@ -117,9 +125,7 @@ export default function DashboardIndex() {
               <CardTitle>Total Sakit</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-semibold">
-                {allAbsenceToday.filter((absence) => absence.submission?.status === "Sakit").length}
-              </p>
+              <p className="text-3xl font-semibold">{total.sicks}</p>
             </CardContent>
           </Card>
         </div>
