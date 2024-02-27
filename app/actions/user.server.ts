@@ -12,6 +12,8 @@ import type { z } from "zod";
 import { deleteUserSchema, updateUserSchema, userSchema } from "~/schemas/user.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AuthorizationError } from "remix-auth";
+import { USER_PASS_STRATEGY, authenticator } from "./auth.server";
+import { commitSession, getSession } from "~/services/session.server";
 
 // Create User
 export async function createUserAction(request: Request) {
@@ -44,7 +46,7 @@ export async function createUserAction(request: Request) {
         password: hashedPassword,
       },
     });
-    
+
     return json({ status: 200, message: "Sukses menambahkan pengguna." }, { status: 200 });
   } catch {
     return json(
@@ -69,9 +71,20 @@ export async function updateUser(request: Request) {
 
   try {
     const hasPassword = password ? { password: hashPassword(password) } : null;
-    await updateUserByNik(data.nik, { ...hasPassword, ...infos });
+    const { password: _, ...updatedUserInfos } = await updateUserByNik(data.nik, {
+      ...hasPassword,
+      ...infos,
+    });
 
-    return json({ status: 200, message: "Berhasil memperbarui pengguna." }, { status: 200 });
+    // Get the current auth session
+    const session = await getSession(request.headers.get("_session"));
+    // Set the auth session to updated user
+    session.set(authenticator.sessionKey, updatedUserInfos);
+
+    return json(
+      { status: 200, message: "Berhasil memperbarui pengguna." },
+      { status: 200, headers: { "Set-Cookie": await commitSession(session) } }
+    );
   } catch {
     return json(
       { status: 500, message: "Gagal memperbarui pengguna. Silahkan coba lagi." },
