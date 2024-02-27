@@ -97,7 +97,7 @@ export default function SettingLokasi() {
           <CustomForm
             actionData={actionData}
             method="post"
-            className="flex flex-col gap-y-6 basis-2/6"
+            className="flex flex-col basis-2/6"
             onSubmit={(e) => {
               form.handleSubmit(e);
               if (form.formState.isValid) {
