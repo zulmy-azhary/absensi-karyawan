@@ -4,7 +4,7 @@ import { useActionData, useOutletContext } from "@remix-run/react";
 import { useState } from "react";
 import { RemixFormProvider, useRemixForm } from "remix-hook-form";
 import type { z } from "zod";
-import { updateUser } from "~/actions/user.server";
+import { updateProfile } from "~/actions/profile.server";
 import { Button } from "~/components/ui/button";
 import { CustomForm } from "~/components/ui/custom-form";
 import { CustomInput } from "~/components/ui/custom-input";
@@ -13,7 +13,7 @@ import { UserType } from "~/types";
 import { LucideUser2 } from "lucide-react";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
-  return await updateUser(request);
+  return await updateProfile(request);
 };
 
 export default function Profil() {
@@ -98,7 +98,7 @@ export default function Profil() {
               </div>
             ) : (
               <Button type="button" onClick={() => setEditable(true)}>
-                Ubah Info Pengguna
+                Ubah Informasi Pengguna
               </Button>
             )}
           </CustomForm>
