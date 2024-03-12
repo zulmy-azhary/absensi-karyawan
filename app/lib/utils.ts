@@ -27,11 +27,11 @@ export function calculateDistance(
     Math.pow(Math.sin(distanceLat / 2), 2) +
     Math.cos(lat1) * Math.cos(lat2) * Math.pow(Math.sin(distanceLng / 2), 2);
 
-  let calculate = 2 * Math.asin(Math.sqrt(a));
+  let calculate = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
   // Radius bumi, 6371 KM
   let radius = 6371;
-  let distanceKm = calculate * radius;
+  let distanceKm = radius * calculate;
 
   return Math.round(distanceKm * 1000);
 }
