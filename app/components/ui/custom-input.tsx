@@ -23,7 +23,8 @@ export const CustomInput = (props: CustomInputProps) => {
             <Input
               className={cn(
                 "read-only:opacity-75 read-only:bg-slate-100",
-                fieldState.error && "border-red-500"
+                fieldState.error && "border-red-500",
+                className
               )}
               {...field}
               {...rest}
