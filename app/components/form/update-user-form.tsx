@@ -8,6 +8,7 @@ import { updateUserSchema } from "~/schemas/user.schema";
 import type { SerializeFrom } from "@remix-run/node";
 import type { UserType } from "~/types";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
 
 type UpdateUserFormProps = {
   user: SerializeFrom<UserType>;
@@ -15,19 +16,31 @@ type UpdateUserFormProps = {
 };
 
 export const UpdateUserForm = ({ user, setOpen }: UpdateUserFormProps) => {
+  const [isChangePassword, setChangePassword] = useState(false);
+
   const form = useRemixForm<z.infer<typeof updateUserSchema>>({
     resolver: zodResolver(updateUserSchema),
     mode: "onChange",
     values: {
       name: user.name,
       nik: user.nik,
-      password: "",
-      confirmPassword: "",
     },
     submitData: {
       action: "UPDATE",
     },
   });
+
+  const handleChangePassword = () => {
+    if (!isChangePassword) {
+      setChangePassword(true);
+      form.setValue("password", "");
+      form.setValue("confirmPassword", "");
+      return;
+    }
+
+    form.unregister(["password", "confirmPassword"]);
+    setChangePassword(false);
+  };
 
   return (
     <RemixFormProvider {...form}>
@@ -57,18 +70,25 @@ export const UpdateUserForm = ({ user, setOpen }: UpdateUserFormProps) => {
               placeholder="Masukkan Nama Lengkap..."
               autoFocus
             />
-            <CustomInput
-              name="password"
-              label="Password"
-              type="password"
-              placeholder="Masukkan Password..."
-            />
-            <CustomInput
-              name="confirmPassword"
-              label="Konfirmasi Password"
-              type="password"
-              placeholder="Masukkan Konfirmasi Password..."
-            />
+            {isChangePassword ? (
+              <>
+                <CustomInput
+                  name="password"
+                  label="Password"
+                  type="password"
+                  placeholder="Masukkan Password..."
+                />
+                <CustomInput
+                  name="confirmPassword"
+                  label="Konfirmasi Password"
+                  type="password"
+                  placeholder="Masukkan Konfirmasi Password..."
+                />
+              </>
+            ) : null}
+            <Button type="button" onClick={handleChangePassword}>
+              {isChangePassword ? "Sembunyikan Password" : "Ubah Password"}
+            </Button>
           </div>
         </DialogHeader>
         <DialogFooter className="justify-center">

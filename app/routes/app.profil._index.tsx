@@ -20,6 +20,7 @@ export default function Profil() {
   const user = useOutletContext<UserType>();
   const actionData = useActionData<typeof action>();
   const [isEditable, setEditable] = useState(false);
+  const [isChangePassword, setChangePassword] = useState(false);
 
   const form = useRemixForm<z.infer<typeof updateUserSchema>>({
     resolver: zodResolver(updateUserSchema),
@@ -27,10 +28,21 @@ export default function Profil() {
     values: {
       name: user.name,
       nik: user.nik,
-      password: "",
-      confirmPassword: "",
     },
   });
+
+  const handleChangePassword = () => {
+    if (!isChangePassword) {
+      setChangePassword(true);
+      form.setValue("password", "");
+      form.setValue("confirmPassword", "");
+      return;
+    }
+
+    form.unregister(["password", "confirmPassword"]);
+    setChangePassword(false);
+  };
+
   return (
     <div className="space-y-6">
       <h2 className="text-lg font-medium">Profil Pengguna</h2>
@@ -66,26 +78,39 @@ export default function Profil() {
               autoFocus
               disabled={!isEditable}
             />
-            <CustomInput
-              name="password"
-              label="Password"
-              type="password"
-              placeholder="Masukkan Password..."
+            {isChangePassword ? (
+              <>
+                <CustomInput
+                  name="password"
+                  label="Password"
+                  type="password"
+                  placeholder="Masukkan Password..."
+                  disabled={!isEditable}
+                />
+                <CustomInput
+                  name="confirmPassword"
+                  label="Konfirmasi Password"
+                  type="password"
+                  placeholder="Masukkan Konfirmasi Password..."
+                  disabled={!isEditable}
+                />
+              </>
+            ) : null}
+            <Button
+              className="w-full"
+              type="button"
+              onClick={handleChangePassword}
               disabled={!isEditable}
-            />
-            <CustomInput
-              name="confirmPassword"
-              label="Konfirmasi Password"
-              type="password"
-              placeholder="Masukkan Konfirmasi Password..."
-              disabled={!isEditable}
-            />
+            >
+              {isChangePassword ? "Sembunyikan Password" : "Ubah Password"}
+            </Button>
             {isEditable ? (
               <div className="flex justify-end gap-x-4">
                 <Button
                   type="button"
                   onClick={() => {
                     setEditable(false);
+                    setChangePassword(false);
                     form.reset();
                   }}
                   variant="destructive"
@@ -97,7 +122,7 @@ export default function Profil() {
                 </Button>
               </div>
             ) : (
-              <Button type="button" onClick={() => setEditable(true)}>
+              <Button className="flex" type="button" onClick={() => setEditable(true)}>
                 Ubah Informasi Pengguna
               </Button>
             )}

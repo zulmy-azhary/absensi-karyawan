@@ -44,7 +44,13 @@ export const updateUserSchema = z
       .min(1, "Nomor Induk Karyawan tidak boleh kosong.")
       .regex(/^[0-9]+$/, "Nomor Induk Karyawan harus berupa angka.")
       .length(9, "Panjang Nomor Induk Karyawan harus 9 digit."),
-    password: z.string(),
+    password: z.optional(
+      z
+        .string()
+        .min(1, "Password tidak boleh kosong.")
+        .min(6, "Password setidaknya mengandung 6 karakter.")
+        .max(24, "Panjang maksimal password adalah 24 karakter.")
+    ),
     confirmPassword: z.string(),
   })
   .partial({ password: true, confirmPassword: true })
